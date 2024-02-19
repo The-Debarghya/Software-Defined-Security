@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+<head>
+    <meta charset="UTF-8">
+    
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css?{% now 'U' %}" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+      crossorigin="anonymous"></script>
+   
+<link href="{% static 'css/styles.css' %}?{% now 'U' %}" rel="stylesheet"/>
+    </head>
+    <body>
+     
+    
+<div class="row mt-4">
+    <div class=col-sm-8 style="float:none;margin:auto;">
+        <div class="card bg-light">
+          <h4 class="card-header"style="background-color:aquamarine"><i class="fas fa-clipboard"style="margin-right:14px"></i>View Logs by Date</h4>
+            <h4 class="card-header"style="background-color:lightyellow"><i class="fas fa-wrench"style="margin-right:14px"></i>Set dates(Note:Set starting and ending dates to be same in case of logs for a single date)</h4>
+            <div class="card-body">
+                <form action="{% url 'logmanagement' %} " method="post">
+                {% csrf_token %}
+                   
+                    <label for="startdate">Starting Date</label>
+                    <input type="date" name="startdate" size="50" required>
+                    <label for="enddate">Ending Date</label>
+                    <input type="date" name="enddate" size="50" required>
+                    <input type="submit" class="fadeIn fourth" value="Set">
+                    <div class="text-center mt-4">
+                      <a href="{% url 'logmanagement' %}" class="btn btn-danger btn-lg active" role="button" aria-pressed="true">Cancel</a>
+                      </div>
+                    
+                    
+            </form>
+            </div>
+        </div>
+        {% for message in messages %}
+        <div class="container-fluid mt-2 mx-4">
+          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
+            
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+<!-- Main Col END -->
+
+<style>
+input, select {
+  width: 90%;
+  padding: 15px 20px;
+  margin: 8px 0;
+  display: block;
+  background-color:whitesmoke;
+  border: 1px solid black;
+  border-radius: 4px;
+  box-sizing: border-box;
+  
+}
+input[type=submit] {
+  width: 13%;
+  background-color: green;
+  color:white;
+  padding: 14px 20px;
+  margin:auto;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+  position:relative;
+}
+
+div.container {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+  color:red
+}
+form {
+ width: 700px;
+ height: 400px;
+ margin: auto;
+ position: relative;
+}
+
+</style>
+
+</body>
+</html>

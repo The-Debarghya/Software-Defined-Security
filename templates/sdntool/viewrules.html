@@ -1,0 +1,116 @@
+{% extends "sdntool/base.html" %} {% block content %}
+
+
+<h4></br>
+    Secure Software Define Network
+    <small class="text-muted">Version 1.2</small>
+</h4>
+<style>
+
+
+</style>
+<div class="row mt-4" id="switchfault">
+  <h4 class="card-header"style="background-color:aquamarine"> <i class="fas fa-home"style="margin-right:14px"></i>Firewall Management</h4>
+  <h4 class="card-header"style="background-color:antiquewhite"> <i class="fas fa-laptop-code"style="margin-right:14px"></i>View Rules</h4>
+    <div class="col-sm-12" style="float:none;margin:auto;">
+      <div class="text-center mt-4 mx-3 mb-3">
+        {% for message in messages %}
+        <div class="container-fluid mt-2 mx-4">
+          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
+            
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+
+        
+      </div>
+        
+        <div class="text-center mt-4">
+         
+          </div>
+          {% if request.session.login.userrole != 'operator' %}
+          <div class="text-center mt-4">
+          <a href="{% url 'addfire' %}" class="btn btn btn-lg active" role="button" style="background-color:lightgreen" aria-pressed="true">Add rules</a>
+          <a href="{% url 'addrulesbyport' %}" class="btn btn btn-lg active" role="button" style="background-color:lightgreen" aria-pressed="true">Add rules by port</a>
+          <a href="{% url 'addrulesbysrc' %}" class="btn btn btn-lg active" role="button" style="background-color:lightgreen" aria-pressed="true">Add rules by Source</a>
+          
+          </div>
+         {% endif %}
+  </form>
+  </div>
+
+                <div class="card-body table-responsive" >
+                   <table class="table table-bordered filter_datatable" >
+
+                        <thead class="table" style="background-color:turquoise;">
+                        <tr>
+                            <th>Serial no.</th>
+                            <th>Rule ID</th>
+                            <th>Source MAC</th>
+                            <th>Destination MAC</th>
+                            <th>Protocol</th>
+                            <th>Device Id</th>
+                            <th>Port no</th>
+                            <th>Action</th>
+                            {% if request.session.login.userrole != 'operator' %}
+                            <th>Delete rules</th>
+                            {% endif %}
+                           
+                            
+                           
+                         </tr>
+
+                      </thead>
+
+                      <tbody id="mydiv" >
+                       
+
+                        {% for x in firewallresponse %}
+                        <tr bgcolor="lightcyan" >
+
+                             <td>{{forloop.counter}}</td>
+                             <td>{{x.ruleId}}</td>
+                             <td>{{x.srcMac}}</td>
+                             <td> {{x.dstMac}}</td>
+                             <td>{{x.protocol}}</td>
+                             <td>{{x.deviceId}}</td>
+                             <td>{{x.port}}</td>
+                             <td>{{x.action}}</td>
+                             {% if request.session.login.userrole != 'operator' %}
+                             <td><a href="{% url 'deleterules' id=x.ruleId %}" class="btn btn-primary btn-lg active" role="button"  style="background-color:red" aria-pressed="true">Delete</a></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+
+                                                                                    
+                       
+
+                        
+                        
+                       
+
+
+                     
+                      </tbody>
+                    </table>
+                </div>
+    </div>
+
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+
+
+  
+  </script>
+
+{% endblock %}
+
+
+
+
+    
+
+

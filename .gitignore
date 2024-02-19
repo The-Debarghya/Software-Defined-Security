@@ -1,0 +1,19 @@
+# .gitignore
+bin/
+lib/
+*.log
+*.json
+
+# random files
+test.py
+.shell_history
+DBcredentials.py
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+_pycache_/

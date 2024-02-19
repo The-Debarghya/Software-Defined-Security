@@ -1,0 +1,90 @@
+{% extends "sdntool/base.html" %} {% block content %}
+
+
+<h4></br>
+    Secure Software Define Network
+    <small class="text-muted">Version 1.2</small>
+</h4>
+<style>
+
+
+</style>
+<div class="row mt-4" id="switchfault">
+  <h4 class="card-header"style="background-color:aquamarine"> <i class="fas fa-home"style="margin-right:14px"></i>AAA Management</h4>
+  <h4 class="card-header"style="background-color:antiquewhite"> <i class="fas fa-laptop-code"style="margin-right:14px"></i>View Configuration</h4>
+    <div class="col-sm-12" style="float:none;margin:auto;">
+      <div class="text-center mt-4 mx-3 mb-3">
+        {% for message in messages %}
+        <div class="container-fluid mt-2 mx-4">
+          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
+            
+            {{ message }}
+          </div>
+        </div>
+        {% endfor %}
+
+        
+        </div
+
+            
+
+                <div class="card-body table-responsive" >
+                   <table class="table table-bordered filter_datatable" >
+
+                        <thead class="table" style="background-color:turquoise;">
+                        <tr>
+                            <th>Sl No.</th>
+                            <th>Radius IP</th>
+                            <th>Status</th>
+                            
+                            
+                           
+                         </tr>
+
+                      </thead>
+
+                      <tbody id="mydiv" >
+                       
+
+                        
+                        <tr bgcolor="lightcyan" >
+
+                             <td>1</td>
+                             <td>{{radius}}</td>
+                             <td>Configured</td>
+
+                        </tr>
+                        
+
+                                                                                    
+                       
+
+                        
+                        
+                       
+
+
+                     
+                      </tbody>
+                    </table>
+                </div>
+    </div>
+
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+
+
+
+  
+  </script>
+
+{% endblock %}
+
+
+
+
+    
+
+

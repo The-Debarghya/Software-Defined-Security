@@ -1,0 +1,66 @@
+
+{% extends "sdntool/base.html" %} {% block content %}
+
+
+<h4></br>
+    Software Defined Security
+    <small class="text-muted">Version 1.0</small>
+</h4>
+<style>
+
+
+</style>
+<div class="row mt-4" id="switchfault">
+  <h4 class="card-header"style="background-color:aquamarine"> <i class="fas fa-home"style="margin-right:14px"></i>Home</h4>
+  <h4 class="card-header"style="background-color:antiquewhite"> <i class="fas fa-laptop-code"style="margin-right:14px"></i> Security Status Monitoring</h4>
+    <div class="col-sm-12" style="float:none;margin:auto;">
+      <div class="text-center mt-4 mx-3 mb-3">
+
+        {% if request.session.login.userrole != 'operator' %}
+        <a href="{% url 'extraconfig' %}" class="btn btn btn-lg active" role="button" aria-pressed="true" style="height:120px;width:200px;padding:1em;margin-left: 10px;background-color:lightgreen">Add Multiple Configuration<i class="fa-user-plus"style="margin-left:28px"></i></a>
+      </div>
+      {% endif %}
+
+            
+                
+               
+                       
+               <div class="text-center mt-4 mx-3 mb-3" style="background-color:lightgoldenyellow;">
+                    <h5 style="background-color:turquoise;"><i class="fas fa-laptop-code"style="margin-left:100px;"style="background-color:lightgoldenyellow;"></i>Configured Ip addresess:</h5>
+
+                   {% for x in ip %}
+                   <p style="background-color: lightyellow;"><i class="fas fa-laptop-code"style="margin-left:90px;"style="background-color:lightgoldenyellow;"></i>{{x}}</p>
+                   {% endfor %}
+               </div>
+                    <div id="formFooter">
+                        {% for message in messages %}
+                        <div class="container-fluid mt-2">
+                          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
+                            
+                            {{ message }}
+                          </div>
+                        </div>
+                        {% endfor %}
+                </div>
+
+                            
+                            
+                                                                                                   
+{% endblock %}
+{% block javascript %}
+<script>
+
+
+        
+
+  
+  </script>
+
+{% endblock %}
+
+
+
+
+    
+
+

@@ -1,0 +1,35 @@
+{% extends "sdntool/base.html" %}
+{% block content %}
+<h3 class="card-header" style="background-color:aquamarine"> <i class="fas fa-clock" style="margin-right:14px"></i>
+    Network Time Protocol</h3>
+<h4 class="card-header" style="background-color:antiquewhite"> <i class="fas fa-clock" style="margin-right:14px"></i>
+    View Configuration</h4>
+
+<div class="card-body table-responsive">
+    <table class="table table-bordered">
+
+        <thead class="table" style="background-color:turquoise" ;>
+            <tr>
+                <th>Sl. No.</th>
+                <th>NTP Server</th>
+                <th>Configured IP</th>
+                <th>Sync output</th>
+            </tr>
+
+        </thead>
+
+        <tbody id="mydiv">
+            {% for x in data %}
+
+
+            <tr bg="aliceblue">
+                <td>{{forloop.counter}}</td>
+                <td>{{x.server}}</td>
+                <td>{{x.ip}}</td>
+                <td>{{x.comment}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

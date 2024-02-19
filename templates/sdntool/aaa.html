@@ -1,0 +1,12 @@
+{% extends "sdntool/base.html" %}
+{% block content %}
+<h3 class="card-header"style="background-color:aquamarine"> <i class="fas fa-key"style="margin-right:14px"></i> Security Functions</h3>
+<h4 class="card-header"style="background-color:lightyellow"> <i class="fas fa-server"style="margin-right:14px"></i> AAA Functionality/Radius Server</h4>
+<div class="text-center mt-4 mx-3 mb-3">
+    <a href="{% url 'date' %}" class="btn btn btn-lg active" role="button" aria-pressed="true" style="height:120px;width:300px;padding:1em;background-color:lightgreen">Activate<i class="far fa-hand-point-up"style="margin-left:14px"></i></a>
+    <a href="{% url 'deletelogconfirm' %}" class="btn btn btn-lg active" role="button" aria-pressed="true" style="height:120px;width:200px;padding:1em;margin-left: 10px;background-color:red">Deactivate<i class="far fa-hand-point-down"style="margin-left:14px"></i></a>
+    
+    
+</div
+{% endblock %}
+
