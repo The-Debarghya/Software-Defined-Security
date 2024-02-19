@@ -22,14 +22,17 @@ import os
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
-
-######### This method used for viewing login page##############
 def login(request):
+    """
+    View for login page
+    """
     return render(request, "sdntool/index.html")
 
 
-######## This method used as login controller#####################
 def logincontroller(request):
+    """
+    Controller for login page
+    """
     global username
     global password
     username = request.POST.get("username")
@@ -74,8 +77,10 @@ def logincontroller(request):
             return redirect("login")
 
 
-###### This method used for logout###############
 def logout(request):
+    """
+    Controller for logout
+    """
     global username
     del request.session["login"]
     with open("iplist.txt", "w") as file:
@@ -89,10 +94,12 @@ def logout(request):
     return redirect("login")
 
 
-# =======This method used for showing home page====================================
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def home(request):
+    """
+    View for home page
+    """
     data = {
         "title": "Dashboard",
     }
@@ -104,9 +111,6 @@ def home(request):
     log_call(f"{username} logged in")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} logged in")
     return render(request, "sdntool/home.html", {"ip": ip})
-
-
-# ========================================================================
 
 
 def aaa(request):
@@ -231,16 +235,20 @@ def viewradius(request):
     return render(request, "sdntool/viewradius.html", {"radius": radiusip})
 
 
-###### This method used for displaying create user form###
 def createuserform(request):
+    """
+    View for creating user form
+    """
     global username
     return render(request, "sdntool/Createuser.html")
 
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-######### This method used for creating users##############
 def Createuser(request):
+    """
+    Controller for creating user
+    """
     global username
     user = request.POST.get("U_id")
     password = make_password(request.POST.get("P_id"))
@@ -257,8 +265,10 @@ def Createuser(request):
     return redirect("showusers")
 
 
-######## This method used for deleting users#############
 def deleteuser(request, id):
+    """
+    Controller for deleting user
+    """
     global username
     userdata = Usermanagement.objects.get(idusermanagement=id)
     userdata.status = "INACTIVE"
@@ -275,8 +285,10 @@ def deleteuser(request, id):
     return redirect("showusers")
 
 
-######### This method used for viewing user details###########
 def users(request):
+    """
+    View for users
+    """
     global username
     userdata = Usermanagement.objects.filter(status="ACTIVE")
     with open("username.txt") as file:
@@ -287,8 +299,10 @@ def users(request):
     return render(request, "sdntool/showusers.html", {"userdata": userdata})
 
 
-####### This method used for viewing SDS logs##################
 def log(request):
+    """
+    View for SDS logs
+    """
     if request.method == "POST":
         loglist = list()
         start = request.POST.get("startdate")
@@ -335,8 +349,10 @@ def log(request):
     return render(request, "sdntool/log.html", {"logresponse": loglist})
 
 
-########### This method used for viewing ONOS security logs########333
 def onosseclog(request):
+    """
+    View for ONOS security logs
+    """
     if request.method == "POST":
         loglist = list()
         start = request.POST.get("startdate")
@@ -383,8 +399,10 @@ def onosseclog(request):
     return render(request, "sdntool/onosseclog.html", {"logresponse": loglist})
 
 
-############ This method used for viewing AAA logs############
 def aaalog(request):
+    """
+    View for AAA logs
+    """
     if request.method == "POST":
         loglist = list()
         start = request.POST.get("startdate")
@@ -399,9 +417,6 @@ def aaalog(request):
         with open("aaa.log", "r") as logfile:
             for file in logfile:
                 match_str = re.search(r"\d{4}-\d{2}-\d{2}", file)
-
-                # computed date
-                # feeding format
                 dt = datetime.strptime(match_str.group(), "%Y-%m-%d").date()
 
                 f = file.split(" - ")
@@ -1705,6 +1720,9 @@ def disablentp(request):
 
 
 def configntp(request):
+    """
+    Adding NTP server to the list of NTP servers
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -1842,8 +1860,6 @@ def ddos(request):
     else:
         messages.error(request, "DDOS attack detected!")
 
-    ##############################################################################################
-
     return render(
         request,
         "sdntool/DDOSattack.html",
@@ -1852,6 +1868,9 @@ def ddos(request):
 
 
 def ntp(request):
+    """
+    View for NTP configuration
+    """
     try:
         with open("ntpdata.json", "r") as f:
             data = json.loads(f.read())
@@ -1862,22 +1881,23 @@ def ntp(request):
 
 
 def addscrulesip(request):
-
+    """
+    View for adding firewall rules by source and destination
+    """
     return render(request, "sdntool/addscrulesip.html")
 
 
-######## THIS METHOD used for rendering add rules by source form########3
 def addrulesbysrc(request):
+    """
+    View for adding firewall rules by source
+    """
     with open("iplist.txt", "r") as file:
 
         iplist = file.readlines()
 
     if request.method == "GET":
-
         return render(request, "sdntool/addrulessrcip.html", {"ip": iplist})
-
     try:
-
         ip = request.POST.get("ip")
         with open("firewallip.txt", "w") as file:
             file.write(ip)
@@ -1886,7 +1906,6 @@ def addrulesbysrc(request):
         return redirect("addrulesbysrc")
 
     try:
-
         hostresponse = dict(
             requests.get(
                 "http://" + str(ip) + ":8181/onos/v1/hosts",
@@ -1902,8 +1921,10 @@ def addrulesbysrc(request):
     )
 
 
-######## This method used as controller for add rules by source#############
 def addrulesbysrccontroller(request):
+    """
+    Controller for adding firewall rules by source
+    """
     ip = request.POST.get("ip")
 
     protocol = request.POST.get("protocol")
