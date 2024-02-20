@@ -4,19 +4,15 @@
 
 <div class="row mt-4">
   <div class="col-sm-12">
-
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">ONOS Password Management
-          </a></li>
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">HTTPS Authentication</a>
+        </li>
 
-        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Configure</li>
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Modify HTTPS</li>
       </ol>
     </nav>
-
-
   </div>
-
 </div>
 
 
@@ -25,11 +21,11 @@
   <div class=col-sm-8 style="float:none;margin:auto;">
     <div class="card bg-light">
       <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
-          style="margin-right:14px"></i>ONOS Password Management</h3>
-      <h4 class="card-header " style="background-color:antiquewhite;"><i class="fas fa-plus"
-          style="margin-right:14px"></i>Configure</h4>
+          style="margin-right:14px"></i>HTTPS Authentication</h3>
+      <h4 class="card-header " style="background-color:antiquewhite" ;><i class="fas fa-plus"
+          style="margin-right:14px"></i>Modify HTTPS</h4>
       <div class="card-body">
-        <form action="{% url 'addconfigpasswordcontroller' %}" method="post">
+        <form action="{% url 'modifyhttp' %}" method="post">
           {% csrf_token %}
           <label for="ip">Select IP</label>
           <select id="ip" name="ip">
@@ -37,21 +33,19 @@
             <option value={{x}}>{{x}}</option>
             {% endfor %}
           </select>
+
           <label for="status">Action</label>
           <select id="status" name="status">
-
-            <option value=false>Disable</option>
             <option value=true>Enable</option>
+
           </select>
-          <label for="algo">Algorithm</label>
-          <select id="algo" name="algo">
-            <option value=MD2>MD2</option>
-            <option value=MD5>MD5</option>
-            <option value=SHA-1>SHA-1</option>
-            <option value=SHA-256>SHA-256</option>
-            <option value=SHA-384>SHA-384</option>
-            <option value=SHA-512>SHA-512</option>
-          </select>
+
+          <label for="key">Location of the key store</label>
+          <input type="text" id="key" class="fadeIn second" value="etc/keystore" name="key" required>
+          <label for="password">SSL Password</label>
+          <input type="password" id="password" class="fadeIn second" name="password" required>
+          <label for="cnfpassword">Confirm Password</label>
+          <input type="password" id="cnfpassword" class="fadeIn second" name="cnfpassword" required>
           <label for="sshuser">SSH User</label>
           <input type="text" id="sshuser" class="fadeIn second" name="sshuser" required>
           <label for="sshpass">SSH Password</label>
@@ -60,6 +54,7 @@
           <input type="text" id="filepath" class="fadeIn second" name="fileloc" value="/home/ubuntu/onos" required>
           <label for="karaf">Karaf version</label>
           <input type="text" id="karaf" class="fadeIn second" name="karaf" value="4.2.9" required>
+
           <input type="submit" class="fadeIn fourth" value="Submit">
       </div>
 

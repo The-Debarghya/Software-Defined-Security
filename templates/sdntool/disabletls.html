@@ -1,17 +1,19 @@
 {% extends "sdntool/base.html" %} {% block content %}
 
+
+
 <div class="row mt-4">
   <div class=col-sm-8 style="float:none;margin:auto;">
     <div class="card">
       <h3 class="card-header" style="background-color:aquamarine"><i class="fas fa-trash"
-          style="margin-right:14px"></i>ONOS Configuration settings </h3>
+          style="margin-right:14px"></i>TLS Authentication </h3>
       <h4 class="card-header" style="background-color:lightyellow"><i class="fas fa-question"
-          style="margin-right:14px"></i> Do you want to add another ONOS configuration?</h4>
+          style="margin-right:14px"></i> Are you sure you want to disable TLS?</h4>
       <div class="card-body">
         <h4>
           </p>
           <div class="text-center mt-4">
-            <a href="{% url 'configcontroller' %}" class="btn btn-primary btn-lg active" role="button"
+            <a href="{% url 'disabletlsconfirm' %}" class="btn btn-primary btn-lg active" role="button"
               style="background-color:green" aria-pressed="true">Yes</a>
           </div>
           <div class="text-center mt-4">

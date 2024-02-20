@@ -22,6 +22,7 @@ import os
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
+
 def login(request):
     """
     View for login page
@@ -114,6 +115,9 @@ def home(request):
 
 
 def aaa(request):
+    """
+    View for AAA page
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
 
@@ -132,8 +136,10 @@ def aaa(request):
     return render(request, "sdntool/configureradius.html", {"ip": ip})
 
 
-##### This method used as controller of AAA form data ##############
 def aaacontroller(request):
+    """
+    Controller for AAA page
+    """
     radiusip = request.POST.get("radiusip")
     radiusport = request.POST.get("radiusport")
     radiussecret = request.POST.get("radiussecret")
@@ -146,24 +152,7 @@ def aaacontroller(request):
         messages.error(request, "Not a valid port")
         return render(request, "sdntool/configureradius.html")
 
-    host = str(ip)
-    port = 22
-    username = "neha"
-    password = "cdcju"
-    # # Establish SSH connection
-    ssh = paramiko.SSHClient()
-
-    # client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
-    except:
-        messages.error(request, "Unable to connect")
-        return render(request, "sdntool/configureradius.html")
-
-    # Create SFTP client
-    sftp = ssh.open_sftp()
+    url = f"http://{ip}:8181/onos/v1/network/configuration"
     aaaconfig = {
         "apps": {
             "org.opencord.aaa": {
@@ -176,21 +165,14 @@ def aaacontroller(request):
         }
     }
     aaaconfigjson = json.dumps(aaaconfig)
+    headers = {"Content-Type": "application/json"}
+    requests.post(
+        url=url,
+        data=aaaconfigjson,
+        headers=headers,
+        auth=HTTPBasicAuth(onos_username, onos_password),
+    )
 
-    with sftp.open("/home/neha/onos/aaa-conf.json", "w") as file:
-        file.write(aaaconfigjson)
-    try:
-        # Execute a command on the remote server
-
-        ssh.exec_command(
-            "./onos/tools/package/runtime/bin/onos-netcfg localhost /home/neha/onos/aaa-conf.json"
-        )
-
-        sftp.close()
-        ssh.close()
-    except:
-        messages.error(request, "Unable to execute command")
-        return redirect("home")
     with open("username.txt") as file:
         username = file.read()
 
@@ -200,32 +182,18 @@ def aaacontroller(request):
     return redirect("viewradius")
 
 
-###### This method used for viewing radius configuration#########3
 def viewradius(request):
+    """
+    View for viewing radius server
+    """
     with open("userip.txt", "r") as file:
         ip = file.read()
     host = str(ip)
-    port = 22
-    username = "neha"
-    password = "cdcju"
-    # # Establish SSH connection
-    ssh = paramiko.SSHClient()
-
-    # client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
-    except:
-        messages.error(request, "Unable to connect")
-        return redirect("home")
-
-    # Create SFTP client
-    sftp = ssh.open_sftp()
-
-    with sftp.open("/home/neha/onos/aaa-conf.json", "r") as config_file:
-        data = config_file.read()
-    config = json.loads(data)  ####### reading the json file
+    response = requests.get(
+        f"http://{host}:8181/onos/v1/network/configuration",
+        auth=HTTPBasicAuth(onos_username, onos_password),
+    )
+    config = json.loads(response)  ####### reading the json file
 
     radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
     with open("username.txt") as file:
@@ -446,45 +414,59 @@ def aaalog(request):
     return render(request, "sdntool/aaalogs.html", {"logresponse": loglist})
 
 
-######## This method used for rendering date form for AAA ##########
 def aaadateform(request):
+    """
+    View for AAA logs date form
+    """
     return render(request, "sdntool/aaadate.html")
 
 
 def deleteaaalogconfirm(request):
+    """
+    View for deleting AAA logs
+    """
     return render(request, "sdntool/deleteaaalogs.html")
 
 
-########## This method used for deleting AAA logs###########
 def deleteaaalogs(request):
-
+    """
+    Controller for deleting AAA logs
+    """
     with open("aaa.log", "w") as logfile:
         logfile.truncate()
     return redirect("aaalog")
 
 
-######## This method used for rendering date form for ONOS security logs ##########
 def onossecdateform(request):
+    """
+    View for ONOS security logs date form
+    """
     return render(request, "sdntool/onossecdate.html")
 
 
-######## This method used for rendering date form for SDS logs ##########
 def dateform(request):
+    """
+    View for SDS logs date form
+    """
     return render(request, "sdntool/date.html")
 
 
 def deleteonosseclogconfirm(request):
+    """
+    View for deleting ONOS security logs
+    """
     return render(request, "sdntool/deleteonosseclogs.html")
 
 
-######## This method used for deleting ONOS security logs ##########
 def deleteonosseclogs(request):
+    """
+    Controller for deleting ONOS security logs
+    """
     with open("onossec.log", "w") as logfile:
         logfile.truncate()
     return redirect("onosseclog")
 
 
-######## This method used for deleting logs for SDS ##########
 def deletelogs(request):
 
     with open("sds.log", "w") as logfile:
@@ -499,8 +481,6 @@ def deletelogconfirm(request):
 def securitystats(request):
     return render(request, "sdntool/securitystats.html")
 
-
-############ This method used for adding ONOS configuration###########
 
 onosiplist = list()
 
@@ -570,39 +550,19 @@ def addconfig(request):
         return redirect("configcontroller")
 
 
-with open("config.json") as config_file:
-    data = config_file.read()
-config = json.loads(data)  ####### reading the json file
-
-
-global port_num
-global onos_username
-global onos_password
-global onos_api
-global onos_ip
-
-
-port_num = config["port_num"]
-onos_username = config["onos_user"]
-onos_password = config["onos_pwd"]
-onos_api = config["api_url"]
-onos_ip = config["ip"]
-
-
-######## This method used for asking for extra ONOS configurations##########
 def addextraconfig(request):
     return render(request, "sdntool/extraconfig.html")
 
 
-######### This method used for adding ONOS password configuration###########
 def addconfigpassword(request):
-
+    """
+    View for adding password configuration
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
 
     if request.method == "GET":
         return render(request, "sdntool/addconfigpassword.html", {"ip": iplist})
-
     ip = request.POST.get("ip")
 
     try:
@@ -616,8 +576,8 @@ def addconfigpassword(request):
     algorithm = request.POST.get("algo")
     host = str(ip)
     port = 22
-    username = "sdn"
-    password = "cdcju"
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -630,26 +590,27 @@ def addconfigpassword(request):
     sftp = ssh.open_sftp()
 
     try:
-
+        onos_location = request.POST.get("fileloc")
+        karaf_ver = request.POST.get("karaf")
         with sftp.open(
-            "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/org.apache.karaf.jaas.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.apache.karaf.jaas.cfg",
             "r",
         ) as file:
             data = file.readlines()  ###### reading file lines
 
-        if status == "true":
-            data[23] = "encryption.enabled = true\n"
-
-            data[53] = "encryption.algorithm =" + str(algorithm) + "\n"
-            messages.success(request, "Action enabled")
-        else:
-            data[23] = "encryption.enabled = false\n"
-
-            data[53] = "encryption.algorithm =" + str(algorithm) + "\n"
-            messages.error(request, "Action disabled")
+        for i in range(len(data)):
+            if data[i].startswith("encryption.algorithm"):
+                data[i] = "encryption.algorithm =" + str(algorithm) + "\n"
+            elif data[i].startswith("encryption.enabled"):
+                if status == "true":
+                    data[i] = "encryption.enabled = true\n"
+                    messages.success(request, "Action enabled")
+                else:
+                    data[i] = "encryption.enabled = false\n"
+                    messages.error(request, "Action disabled")
 
         with sftp.open(
-            "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/org.apache.karaf.jaas.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.apache.karaf.jaas.cfg",
             "w",
         ) as file:
             file.writelines(data)
@@ -672,8 +633,10 @@ def addconfigpassword(request):
     return redirect("viewconfigurationpassword")
 
 
-######### This method used for modifying password##############3
 def modifypassword(request):
+    """
+    View for modifying password configuration
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -691,8 +654,8 @@ def modifypassword(request):
 
     host = str(ip)
     port = 22
-    username = "sdn"
-    password = "cdcju"
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -704,26 +667,27 @@ def modifypassword(request):
     # Create SFTP client
     sftp = ssh.open_sftp()
     try:
-
+        onos_location = request.POST.get("fileloc")
+        karaf_ver = request.POST.get("karaf")
         with sftp.open(
-            "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/org.apache.karaf.jaas.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.apache.karaf.jaas.cfg",
             "r",
         ) as file:
             data = file.readlines()  ######reading file lines
 
-        if status == "true":
-            data[23] = "encryption.enabled = true\n"
-
-            data[53] = "encryption.algorithm =" + str(algorithm) + "\n"
-            messages.success(request, "Action Enabled")
-        else:
-            data[23] = "encryption.enabled = false\n"
-
-            data[53] = "encryption.algorithm =" + str(algorithm) + "\n"
-            messages.error(request, "Action disabled")
+        for i in range(len(data)):
+            if data[i].startswith("encryption.algorithm"):
+                data[i] = "encryption.algorithm =" + str(algorithm) + "\n"
+            elif data[i].startswith("encryption.enabled"):
+                if status == "true":
+                    data[i] = "encryption.enabled = true\n"
+                    messages.success(request, "Action enabled")
+                else:
+                    data[i] = "encryption.enabled = false\n"
+                    messages.error(request, "Action disabled")
 
         with sftp.open(
-            "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/org.apache.karaf.jaas.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.apache.karaf.jaas.cfg",
             "w",
         ) as file:
             file.writelines(data)
@@ -748,22 +712,63 @@ def modifypassword(request):
 
 
 def disablepassword(request):
+    with open("iplist.txt", "r") as file:
+        iplist = file.readlines()
+    return render(request, "sdntool/disablepassword.html", {"ip": iplist})
 
-    return render(request, "sdntool/disablepassword.html")
 
-
-######### This method used for disabling password############
 def disablepasswordconfirm(request):
-    with open(
-        "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/org.apache.karaf.jaas.cfg", "r"
-    ) as file:
-        data = file.readlines()  ###### reading file lines
-    data[23] = data[23].replace("true", "false")
+    """
+    Controller for disabling password configuration
+    """
+    with open("iplist.txt", "r") as file:
+        iplist = file.readlines()
+    if request.method == "GET":
+        return render(request, "sdntool/disablepassword.html", {"ip": iplist})
+    ip = request.POST.get("ip")
 
-    with open(
-        "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/org.apache.karaf.jaas.cfg", "w"
-    ) as file:
-        file.writelines(data)
+    try:
+        with open("userip.txt", "w") as file:
+            file.write(ip)
+    except:
+        messages.error(request, "No IP is given as input")
+        return redirect("modifypassword")
+
+    host = str(ip)
+    port = 22
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
+    # Establish SSH connection
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        ssh.connect(hostname=host, port=port, username=username, password=password)
+    except:
+        messages.error(request, "Unable to connect remotely")
+        return redirect("home")
+    # Create SFTP client
+    sftp = ssh.open_sftp()
+    try:
+        onos_location = request.POST.get("fileloc")
+        karaf_ver = request.POST.get("karaf")
+        with sftp.open(
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.apache.karaf.jaas.cfg",
+            "r",
+        ) as file:
+            data = file.read()  ######reading file lines
+
+        re.sub("encryption.enabled = true", "encryption.enabled = false", data)
+        with sftp.open(
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.apache.karaf.jaas.cfg",
+            "w",
+        ) as file:
+            file.write(data)
+
+        sftp.close()
+        ssh.close()
+    except:
+        messages.error(request, "Unable to connect with given IP")
+        return redirect("modifypassword")
     messages.error(request, "Password encryption disabled")
     with open("username.txt") as file:
         username = file.read()
@@ -850,10 +855,10 @@ def viewpasswordconfiguration(request):
     )
 
 
-######### This method used for configuring HTTPS#############
-
-
 def confighttp(request):
+    """
+    View for configuring HTTPS
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -872,8 +877,8 @@ def confighttp(request):
 
     host = str(ip)
     port = 22
-    username = "srijita"
-    password = "cdcju"
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -886,28 +891,30 @@ def confighttp(request):
     sftp = ssh.open_sftp()
 
     try:
-
+        onos_location = request.POST.get("fileloc")
+        karaf_ver = request.POST.get("karaf")
         with sftp.open(
-            "/home/srijita/Videos/onos-2.5.1/apache-karaf-4.2.9/etc/org.ops4j.pax.web.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg",
             "r",
         ) as file:
             data = file.readlines()  ###### reading all lines
-
-        if status == "true":
-            data[4] = 'org.osgi.service.http.secure.enabled="+true+"\n'
-            data[6] = "org.ops4j.pax.web.ssl.keystore=" + keyloc + "\n"
-            data[7] = "org.ops4j.pax.web.ssl.password=" + httppassword + "\n"
-            data[8] = "org.ops4j.pax.web.ssl.keypassword=" + cnfpassword + "\n"
-            messages.success(request, "Action Enabled")
-        else:
-            data[4] = "org.osgi.service.http.secure.enabled=false\n"
-            data[6] = "org.ops4j.pax.web.ssl.keystore=" + keyloc + "\n"
-            data[7] = "org.ops4j.pax.web.ssl.password=" + httppassword + "\n"
-            data[8] = "org.ops4j.pax.web.ssl.keypassword=" + cnfpassword + "\n"
-            messages.error(request, "Action Disabled")
+        for i in range(len(data)):
+            if data[i].startswith("org.ops4j.pax.web.ssl.keystore"):
+                data[i] = "org.ops4j.pax.web.ssl.keystore=" + keyloc + "\n"
+            elif data[i].startswith("org.ops4j.pax.web.ssl.password"):
+                data[i] = "org.ops4j.pax.web.ssl.password=" + httppassword + "\n"
+            elif data[i].startswith("org.ops4j.pax.web.ssl.keypassword"):
+                data[i] = "org.ops4j.pax.web.ssl.keypassword=" + cnfpassword + "\n"
+            elif data[i].startswith("org.osgi.service.http.secure.enabled"):
+                if status == "true":
+                    data[i] = 'org.osgi.service.http.secure.enabled="+true+"\n'
+                    messages.success(request, "Action Enabled")
+                else:
+                    data[i] = "org.osgi.service.http.secure.enabled=false\n"
+                    messages.error(request, "Action Disabled")
 
         with open(
-            "/home/srijita/Videos/onos-2.5.1/apache-karaf-4.2.9/etc/org.ops4j.pax.web.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg",
             "w",
         ) as file:
             file.writelines(data)
@@ -938,8 +945,10 @@ def confighttp(request):
         return redirect("confighttp")
 
 
-######### This method used for modifying HTTPS configuration##############
 def modifyhttp(request):
+    """
+    View for modifying HTTPS
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -951,7 +960,8 @@ def modifyhttp(request):
     ip = request.POST.get("ip")
     username = request.POST.get("sshuser")
     password = request.POST.get("sshpass")
-    fileloc = request.POST.get("fileloc")
+    onos_location = request.POST.get("fileloc")
+    karaf_ver = request.POST.get("karaf")
     try:
         with open("userip.txt", "w") as file:
             file.write(ip)
@@ -961,16 +971,12 @@ def modifyhttp(request):
 
     host = str(ip)
     port = 22
-    # username = 'srijita'
-    # password = 'cdcju'
-    # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         ssh.connect(hostname=host, port=port, username=username, password=password)
 
     except paramiko.AuthenticationException:
-        # print("Authentication failed, please verify your credentials: %s")
         messages.error(
             request,
             "Authentication failed, please verify your credentials: %s"
@@ -994,17 +1000,12 @@ def modifyhttp(request):
         datatowrite = """
                 org.osgi.service.http.port=8181
                 org.osgi.service.http.port.secure=8443
-
                 org.osgi.service.http.enabled=true
                 org.osgi.service.http.secure.enabled=true
-
                 org.ops4j.pax.web.ssl.keystore={}
                 org.ops4j.pax.web.ssl.password={}
                 org.ops4j.pax.web.ssl.keypassword={}
-
-
                 org.ops4j.pax.web.session.timeout=1440
-
                 org.ops4j.pax.web.session.url=none
                 org.ops4j.pax.web.config.file=./etc/jetty.xml
                 """.format(
@@ -1012,7 +1013,10 @@ def modifyhttp(request):
         )
 
         # print(datatowrite)
-        with sftp.open(fileloc, "w") as f:
+        full_path = (
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg"
+        )
+        with sftp.open(full_path, "w") as f:
             f.writelines(datatowrite)
         sftp.close()
         ssh.close()
@@ -1044,12 +1048,17 @@ def modifyhttp(request):
 
 
 def disablehttp(request):
+    """
+    View for disabling HTTPS
+    """
     if request.method == "GET":
         return render(request, "sdntool/disablehttp.html")
 
 
-######### This method used for disabling HTTPS###################
 def disablehttpconfirm(request):
+    """
+    Controller for disabling HTTPS
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -1065,8 +1074,8 @@ def disablehttpconfirm(request):
 
     host = str(ip)
     port = 22
-    username = "srijita"
-    password = "cdcju"
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -1078,37 +1087,24 @@ def disablehttpconfirm(request):
     # Create SFTP client
     sftp = ssh.open_sftp()
     try:
-
-        datatowrite = """
-org.osgi.service.http.port=8181
-org.osgi.service.http.port.secure=8443
-
-org.osgi.service.http.enabled=true
-org.osgi.service.http.secure.enabled=false
-
-org.ops4j.pax.web.ssl.keystore=etc/keystore
-org.ops4j.pax.web.ssl.password=222222
-org.ops4j.pax.web.ssl.keypassword=222222
-
-
-org.ops4j.pax.web.session.timeout=1440
-
-org.ops4j.pax.web.session.url=none
-org.ops4j.pax.web.config.file=./etc/jetty.xml
-"""
-
+        onos_location = request.POST.get("fileloc")
+        karaf_ver = request.POST.get("karaf")
         with sftp.open(
-            "/home/srijita/Videos/onos-2.5.1/apache-karaf-4.2.9/etc/org.ops4j.pax.web.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg",
             "r",
         ) as file:
-            data = file.readlines()  ###### reading all lines
-        data[4] = "org.osgi.service.http.secure.enabled=false\n"
+            data = str(file.read())
+        re.sub(
+            r"org.osgi.service.http.secure.enabled=true",
+            "org.osgi.service.http.secure.enabled=false",
+            data,
+        )
 
         with sftp.open(
-            "/home/srijita/Videos/onos-2.5.1/apache-karaf-4.2.9/etc/org.ops4j.pax.web.cfg",
+            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg",
             "w",
         ) as file:
-            file.writelines(datatowrite)
+            file.writelines(data)
         sftp.close()
         ssh.close()
     except:
@@ -1127,9 +1123,6 @@ org.ops4j.pax.web.config.file=./etc/jetty.xml
             syslog.syslog(syslog.LOG_INFO, lastline)
     messages.error(request, "HTTPS disabled")
     return redirect("viewhttp")
-
-
-ipconfiglist = list()
 
 
 ######### This method used for viewing HTTPS configuration###############
@@ -1209,8 +1202,10 @@ def viewhttp(request):
     return render(request, "sdntool/viewhttp.html", {"ipconfiglist": ipstatuslist})
 
 
-######### This method used for CONFIGURING TLS#################
 def configtls(request):
+    """
+    View for configuring TLS
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -1246,42 +1241,35 @@ def configtls(request):
     sftp = ssh.open_sftp()
 
     try:
-
-        with sftp.open("/home/sdn/onosnew/bin/onos-service", "r") as file:
+        onos_location = request.POST.get("fileloc")
+        with sftp.open(f"{onos_location}/bin/onos-service", "r") as file:
             data = file.readlines()  ###### reading all lines
 
-        if status == "true":
-            data[10] = (
-                "export JAVA_OPTS="
-                + '"'
-                + "${JAVA_OPTS:--DenableOFTLS=true -Djavax.net.ssl.keyStore="
-                + str(keyloc)
-                + " -Djavax.net.ssl.keyStorePassword="
-                + str(keypassword)
-                + " -Djavax.net.ssl.trustStore="
-                + str(trustloc)
-                + " -Djavax.net.ssl.trustStorePassword="
-                + str(trustpassword)
-                + '}"'
-                + "\n"
-            )
-            messages.success(request, "Action Enabled")
-        else:
-            data[10] = (
-                'export JAVA_OPTS="${JAVA_OPTS:--DenableOFTLS=false -Djavax.net.ssl.keyStore='
-                + str(keyloc)
-                + " -Djavax.net.ssl.keyStorePassword="
-                + str(keypassword)
-                + " -Djavax.net.ssl.trustStore="
-                + str(trustloc)
-                + " -Djavax.net.ssl.trustStorePassword="
-                + str(trustpassword)
-                + '}"'
-                + "\n"
-            )
-            messages.error(request, "Action Disabled")
+        for i in range(len(data)):
+            if data[i].startswith("export JAVA_OPTS"):
+                if status == "true":
+                    enable_tls = "true"
+                    messages.success(request, "Action Enabled")
+                else:
+                    enable_tls = "false"
+                    messages.error(request, "Action Disabled")
+                data[i] = (
+                    "export JAVA_OPTS="
+                    + '"'
+                    + f"${{JAVA_OPTS:--DenableOFTLS={enable_tls} -Djavax.net.ssl.keyStore="
+                    + str(keyloc)
+                    + " -Djavax.net.ssl.keyStorePassword="
+                    + str(keypassword)
+                    + " -Djavax.net.ssl.trustStore="
+                    + str(trustloc)
+                    + " -Djavax.net.ssl.trustStorePassword="
+                    + str(trustpassword)
+                    + '}"'
+                    + "\n"
+                )
+                break
 
-        with sftp.open("/home/sdn/Documents/onos/bin/onos-service", "w") as file:
+        with sftp.open(f"{onos_location}/bin/onos-service", "w") as file:
             file.writelines(data)
 
         sftp.close()
@@ -1305,9 +1293,10 @@ def configtls(request):
     return redirect("viewtls")
 
 
-######### This method used for modifying TLS configuration###########
 def modifytls(request):
-
+    """
+    View for modifying TLS
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -1327,8 +1316,8 @@ def modifytls(request):
 
     host = str(ip)
     port = 22
-    username = "sdn"
-    password = "cdcju"
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -1340,26 +1329,35 @@ def modifytls(request):
     # Create SFTP client
     sftp = ssh.open_sftp()
     try:
-
-        with sftp.open("/home/sdn/onosnew/bin/onos-service", "r") as file:
+        onos_location = request.POST.get("fileloc")
+        with sftp.open(f"{onos_location}/bin/onos-service", "r") as file:
             data = file.readlines()  ###### reading all lines
 
-        data[10] = (
-            "export JAVA_OPTS="
-            + '"'
-            + "${JAVA_OPTS:--DenableOFTLS=true -Djavax.net.ssl.keyStore="
-            + str(keyloc)
-            + " -Djavax.net.ssl.keyStorePassword="
-            + str(keypassword)
-            + " -Djavax.net.ssl.trustStore="
-            + str(trustloc)
-            + " -Djavax.net.ssl.trustStorePassword="
-            + str(trustpassword)
-            + '}"'
-            + "\n"
-        )
+        for i in range(len(data)):
+            if data[i].startswith("export JAVA_OPTS"):
+                if status == "true":
+                    enable_tls = "true"
+                    messages.success(request, "Action Enabled")
+                else:
+                    enable_tls = "false"
+                    messages.error(request, "Action Disabled")
+                data[i] = (
+                    "export JAVA_OPTS="
+                    + '"'
+                    + f"${{JAVA_OPTS:--DenableOFTLS={enable_tls} -Djavax.net.ssl.keyStore="
+                    + str(keyloc)
+                    + " -Djavax.net.ssl.keyStorePassword="
+                    + str(keypassword)
+                    + " -Djavax.net.ssl.trustStore="
+                    + str(trustloc)
+                    + " -Djavax.net.ssl.trustStorePassword="
+                    + str(trustpassword)
+                    + '}"'
+                    + "\n"
+                )
+                break
 
-        with sftp.open("/home/sdn/onosnew/bin/onos-service", "w") as file:
+        with sftp.open(f"{onos_location}/bin/onos-service", "w") as file:
             file.writelines(data)
 
         sftp.close()
@@ -1386,12 +1384,13 @@ def modifytls(request):
 
 
 def disabletls(request):
-
     return render(request, "sdntool/disabletls.html")
 
 
-######### This method used for disabling TLS##############
 def disabletlsconfirm(request):
+    """
+    Controller for disabling TLS
+    """
     with open("iplist.txt", "r") as file:
         iplist = file.readlines()
     if request.method == "GET":
@@ -1407,8 +1406,8 @@ def disabletlsconfirm(request):
 
     host = str(ip)
     port = 22
-    username = "sdn"
-    password = "cdcju"
+    username = request.POST.get("sshuser")
+    password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -1420,12 +1419,12 @@ def disabletlsconfirm(request):
     # Create SFTP client
     sftp = ssh.open_sftp()
     try:
-
-        with sftp.open("/home/sdn/onosnew/bin/onos-service", "r") as file:
+        onos_location = request.POST.get("fileloc")
+        with sftp.open(f"{onos_location}/bin/onos-service", "r") as file:
             data = file.readlines()  ###### reading all lines
 
         data[10] = data[10].replace("true", "false")
-        with sftp.open("/home/sdn/onosnew/bin/onos-service", "w") as file:
+        with sftp.open(f"{onos_location}/bin/onos-service", "w") as file:
             file.writelines(data)
         sftp.close()
         ssh.close()
@@ -1455,9 +1454,7 @@ ipconfiglist = list()
 
 ######### This method used for viewing TLS configuration#############
 def viewtls(request):
-
     global ipconfiglist
-
     with open("userip.txt", "r") as file:
         ip = file.read()
 
@@ -1534,15 +1531,14 @@ def viewtls(request):
     return render(request, "sdntool/viewtls.html", {"ipconfiglist": ipstatuslist})
 
 
-######## This method used for rendering form of add firewall rule#################
 def addfire(request):
-
+    """
+    View for adding firewall rules
+    """
     with open("iplist.txt", "r") as file:
-
         iplist = file.readlines()
 
     if request.method == "GET":
-
         return render(request, "sdntool/addrulesip.html", {"ip": iplist})
 
     try:
@@ -1569,8 +1565,10 @@ def addfire(request):
     )
 
 
-##### This method used as controller for firewall rules#############
 def addfirecontroller(request):
+    """
+    Controller for adding firewall rule
+    """
     ip = request.POST.get("ip")
     devid = request.POST.get("devid")
     protocol = request.POST.get("protocol")
@@ -1597,8 +1595,10 @@ def addfirecontroller(request):
     return redirect("viewrules")
 
 
-######This method used for rendering form of firewall rules by port############
 def addrulesbyport(request):
+    """
+    View for adding firewall rules by port
+    """
     with open("iplist.txt", "r") as file:
 
         iplist = file.readlines()
@@ -1633,8 +1633,10 @@ def addrulesbyport(request):
     )
 
 
-######### This method used as controller for adding firewall rule by ports#######
 def addrulesbyportcontroller(request):
+    """
+    Controller for adding firewall rules by port
+    """
     ip = request.POST.get("ip")
     port = request.POST.get("port")
     devid = request.POST.get("devid")
@@ -1672,8 +1674,10 @@ def addrulesbyportcontroller(request):
     return redirect("viewrules")
 
 
-########## This method used for viewing firewall rules###############
 def viewrules(request):
+    """
+    Viewing firewall rules
+    """
     with open("firewallip.txt", "r") as file:
         firewallip = file.read()
 
@@ -1702,8 +1706,10 @@ def viewrules(request):
     )
 
 
-###### This method used for deleting firewall rules###############
 def deleterules(request, id):
+    """
+    Deleting firewall rule by id
+    """
     with open("firewallip.txt", "r") as file:
         firewallip = file.read()
 
@@ -1797,17 +1803,17 @@ def configntp(request):
 
 ddoscnt = 0
 
-
-########### This method used for viewing ddos attacks##########
 def ddos(request):
-
+    """
+    View for DDOS attack detection
+    """
     portfaultcounter = 0
-
-    if os.stat("portconf.json").st_size == 0:  ##### checking if file is empty
-
+    with open("iplist.txt", "r") as file:
+        ip = str(file.read())
+    if os.stat("portconf.json").st_size == 0:
         portapi = dict(
             requests.get(
-                "http://192.168.0.24:8181/onos/v1/devices/ports",
+                f"http://{ip}:8181/onos/v1/devices/ports",
                 auth=HTTPBasicAuth(onos_username, onos_password),
             ).json()
         )
@@ -1823,8 +1829,6 @@ def ddos(request):
             outfile.write(port_json)
         outfile.close()
 
-    #################################################################################
-
     ##################### READING STORED JSON AND VERIFYING AGAINST THE API IF PRESENT ##############################
     with open("portconf.json") as portconfig_file:
         portdata = portconfig_file.read()
@@ -1834,7 +1838,7 @@ def ddos(request):
 
     allportapi = dict(
         requests.get(
-            "http://192.168.0.24:8181/onos/v1/devices/ports",
+            f"http://{ip}:8181/onos/v1/devices/ports",
             auth=HTTPBasicAuth(onos_username, onos_password),
         ).json()
     )

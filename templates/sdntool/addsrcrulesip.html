@@ -3,98 +3,93 @@
 
 
 <div class="row mt-4">
-  <div class="col-sm-12">
+    <div class="col-sm-12">
 
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Firewall Management </a>
-        </li>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Firewall Management </a></li>
+              
+              <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Add Rules By Port</li>
+            </ol>
+          </nav>
 
-        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Add Rules By Port</li>
-      </ol>
-    </nav>
 
-
-  </div>
+    </div>
 
 </div>
 
 
 
 <div class="row mt-4">
-  <div class=col-sm-8 style="float:none;margin:auto;">
-    <div class="card bg-light">
-      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
-          style="margin-right:14px"></i>Firewall Management</h3>
-      <h4 class="card-header " style="background-color:antiquewhite;"><i class="fas fa-plus"
-          style="margin-right:14px"></i>Add Rules By Source </h4>
-      <div class="card-body">
-        <form action="{% url 'addrulesbyport' %}" method="post">
-          {% csrf_token %}
-          <label for="ip">Select IP</label>
-          <select id="ip" name="ip">
-            {% for x in ip %}
-            <option value={{x}}>{{x}}</option>
+    <div class=col-sm-8 style="float:none;margin:auto;">
+        <div class="card bg-light">
+            <h3 class="card-header "style="background-color:aquamarine;"> <i class="fas fa-cog"style="margin-right:14px"></i>Firewall Management</h3>
+            <h4 class="card-header "style="background-color:antiquewhite;"><i class="fas fa-plus"style="margin-right:14px"></i>Add Rules By Source </h4>
+            <div class="card-body">
+                <form  action ="{% url 'addrulesbyport' %}" method="post">
+                {% csrf_token %}
+                    <label for="ip">Select IP</label>
+                    <select id="ip" name="ip" >
+                    {% for x in ip %}
+                    <option value={{x}}>{{x}}</option>
+                    {% endfor %}
+                    </select>
+                    
+                       <input type="submit" class="fadeIn fourth" value="Submit">
+
+
+                    
+        
+               
+                </div>
+               
+            </form>
+            </div>
+        </div>
+        <div id="formFooter">
+            {% for message in messages %}
+            <div class="container-fluid mt-2">
+              <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
+                
+                {{ message }}
+              </div>
+            </div>
             {% endfor %}
-          </select>
-
-          <input type="submit" class="fadeIn fourth" value="Submit">
-
-
-
-
-
-      </div>
-
-      </form>
     </div>
-  </div>
-  <div id="formFooter">
-    {% for message in messages %}
-    <div class="container-fluid mt-2">
-      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
-
-        {{ message }}
-      </div>
-    </div>
-    {% endfor %}
-  </div>
 
 </div>
 <!-- Main Col END -->
 
 <style>
-  input,
-  select {
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: block;
-    background-color: white;
-    border: 1px solid black;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
+input, select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: block;
+  background-color:white;
+  border: 1px solid black;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+input[type=submit] {
+  width: 13%;
+  background-color: #04AA6D;
+  color: white;
+  padding: 14px 20px;
+  margin:auto;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-  input[type=submit] {
-    width: 13%;
-    background-color: #04AA6D;
-    color: white;
-    padding: 14px 20px;
-    margin: auto;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+input[type=submit]:hover {
+  background-color: #45a049;
+}
 
-  input[type=submit]:hover {
-    background-color: #45a049;
-  }
-
-  div.container {
-    border-radius: 5px;
-    background-color: #f2f2f2;
-    padding: 20px;
-  }
+div.container {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
 </style>
 {% endblock %}
