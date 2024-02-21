@@ -781,45 +781,52 @@ def disablepasswordconfirm(request):
 ipconfiglist = list()
 
 
-####### This method used for viewing password configuration#########
 def viewpasswordconfiguration(request):
+    """
+    View for viewing password configuration
+    """
 
     global ipconfiglist
     with open("userip.txt", "r") as file:
         ip = file.read()
 
     host = str(ip)
-    port = 22
-    username = "sdn"
-    password = "cdcju"
+    port = 8101
+    username = "karaf"
+    password = "karaf"
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         ssh.connect(hostname=host, port=port, username=username, password=password)
-    except:
-        messages.error(request, "No IP is given as input")
-        return redirect("home")
-
-    # Create SFTP client
-    sftp = ssh.open_sftp()
-    try:
-
-        with sftp.open(
-            "/home/sdn/Documents/onos/apache-karaf-4.2.9/etc/users.properties"
-        ) as file:
-            data = file.readlines()
-        data[31] = data[31][:100]
-
-        data[31] = data[31].split("=")
-        user = data[31][0]
-        password = data[31][1].split(",")[0]
-
-        # Close the SFTP session and SSH connection
-        sftp.close()
+        outdata = errdata = b""
+        ssh_trans = ssh.get_transport()
+        ssh_trans.host_key_type = "ssh-rsa"
+        chan = ssh_trans.open_session()
+        chan.setblocking(0)
+        chan.exec_command("cat etc/users.properties")
+        while True:
+            while chan.recv_ready():
+                outdata += chan.recv(1000)
+            while chan.recv_stderr_ready():
+                errdata += chan.recv_stderr(1000)
+            if chan.exit_status_ready():
+                break
+        ssh_trans.close()
+        retcode = chan.recv_exit_status()
         ssh.close()
+        if retcode != 0:
+            raise Exception("Error occurred while executing command")
+        data = outdata.decode("utf-8").splitlines()
+        pattern = re.compile(r"(\w+)\s+=\s+(\w+),_g_:(\w+)")
+        for line in data:
+            match = pattern.match(line)
+            if match:
+                user = match.group(1)
+                password = match.group(2)
+                break
     except:
-        messages.error(request, "Unable to connect with given IP")
+        messages.error(request, "Error occurred while connecting to the remote server")
         return redirect("home")
 
     ipconfiglist.append({"ip": ip, "user": user, "password": password})
@@ -1125,45 +1132,24 @@ def disablehttpconfirm(request):
     return redirect("viewhttp")
 
 
-######### This method used for viewing HTTPS configuration###############
 def viewhttp(request):
+    """
+    View for viewing HTTPS configuration
+    """
     global ipconfiglist
 
     with open("userip.txt", "r") as file:
         ip = file.read()
 
     host = str(ip)
-    port = 22
-    username = "srijita"
-    password = "cdcju"
-    # Establish SSH connection
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        resp = requests.get(f"https://{host}:8443/onos/ui/login.html", verify=False)
+        status = True
+    except ConnectionRefusedError:
+        status = False
     except:
-        messages.error(request, "No IP is given as input")
-        return redirect(home)
-
-    # Create SFTP client
-    sftp = ssh.open_sftp()
-    try:
-
-        with sftp.open(
-            "/home/srijita/Videos/onos-2.5.1/onos/apache-karaf-4.2.9/etc/org.ops4j.pax.web.cfg",
-            "r",
-        ) as file:
-            data = file.readlines()  ###### reading all lines
-    except:
-        messages.error(request, "Unable to connect with given IP")
-        return redirect("home")
-
-    status = data[4].split("=")[1]
-
-    sftp.close()
-    ssh.close()
-    if status == "true\n":
+        status = False
+    if status is True:
         ipconfiglist.append({"ip": ip, "status": "enabled", "name": "HTTPS"})
     else:
         ipconfiglist.append({"ip": ip, "status": "disabled", "name": "HTTPS"})
@@ -1449,44 +1435,55 @@ def disabletlsconfirm(request):
     return redirect("viewtls")
 
 
-ipconfiglist = list()
-
-
-######### This method used for viewing TLS configuration#############
 def viewtls(request):
+    """
+    View for viewing TLS configuration
+    """
     global ipconfiglist
     with open("userip.txt", "r") as file:
         ip = file.read()
 
     host = str(ip)
-    port = 22
-    username = "sdn"
-    password = "cdcju"
+    port = 8101
+    username = "karaf"
+    password = "karaf"
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
         ssh.connect(hostname=host, port=port, username=username, password=password)
+        outdata = errdata = b""
+        ssh_trans = ssh.get_transport()
+        ssh_trans.host_key_type = "ssh-rsa"
+        chan = ssh_trans.open_session()
+        chan.setblocking(0)
+        chan.exec_command("cat ../bin/onos-service")
+        while True:
+            while chan.recv_ready():
+                outdata += chan.recv(1000)
+            while chan.recv_stderr_ready():
+                errdata += chan.recv_stderr(1000)
+            if chan.exit_status_ready():
+                break
+        ssh_trans.close()
+        ssh.close()
+        retcode = chan.recv_exit_status()
+        if retcode != 0:
+            raise Exception("Error occurred while executing command")
+        data = outdata.decode("utf-8").splitlines()
+        for line in data:
+            if line.startswith("#"):
+                continue
+            else:
+                if "DenableOFTLS" in line:
+                    if "true" in line:
+                        status = "true"
+                    else:
+                        status = "false"
+                    break
     except:
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
-    # Create SFTP client
-    sftp = ssh.open_sftp()
-
-    try:
-
-        with sftp.open("/home/sdn/onosnew/bin/onos-service", "r") as file:
-            data = file.readlines()  ###### reading all lines
-    except:
-
-        messages.error(request, "Unable to connect with given IP")
-        return redirect("home")
-
-    string = "true|false"
-    status = re.findall(string, data[10])[0]
-
-    sftp.close()
-    ssh.close()
 
     if status == "true":
         ipconfiglist.append({"ip": ip, "status": "enabled", "name": "TLS"})
@@ -1802,6 +1799,7 @@ def configntp(request):
 
 
 ddoscnt = 0
+
 
 def ddos(request):
     """
