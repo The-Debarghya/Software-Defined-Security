@@ -19,6 +19,7 @@
     <link rel="icon" type="image/x-icon" href="{% static 'images/jadav_logo.png' %}">
     <link rel="stylesheet" href="{% static 'css/jquery-confirm.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap5.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 
     <style>
         .table-responsive {
@@ -56,7 +57,7 @@
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
             <nav class="sb-sidenav accordion sb-sidenav-light"
-                style="background-color: antiquewhite ;height: 7000px;border:BLACK 2px SOLID " id="sidenavAccordion">
+                style="background-color: antiquewhite ;overflow-y: auto; " id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
                         <a class="nav-link" style="background-color:green;color:white" href="{% url 'home' %}">

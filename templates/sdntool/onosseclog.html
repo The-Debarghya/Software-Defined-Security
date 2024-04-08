@@ -2,76 +2,58 @@
 
 
 <h4></br>
-    Software Defined Security
-    <small class="text-muted">Version 1.0</small>
+  Software Defined Security
+  <small class="text-muted">Version 1.0</small>
 </h4>
 <style>
 
 
 </style>
 <div class="row mt-4" id="switchfault">
-  <h3 class="card-header"style="background-color:aquamarine";> <i class="fas fa-clipboard"style="margin-right:14px"></i> ONOS Security Log Management</h3>
-  <h4 class="card-header"style="background-color:antiquewhite";> <i class="fas fa-clipboard"style="margin-right:14px"></i> View  ONOS Logs</h4>
+  <h3 class="card-header" style="background-color:aquamarine" ;> <i class="fas fa-clipboard"
+      style="margin-right:14px"></i> ONOS Security Log Management</h3>
+  <h4 class="card-header" style="background-color:antiquewhite" ;> <i class="fas fa-clipboard"
+      style="margin-right:14px"></i> View ONOS Logs</h4>
   <div class="col-sm-12" style="float:none;margin:auto;">
-      <div class="text-center mt-4 mx-3 mb-3">
-        <a href="{% url 'onossecdateform' %}" class="btn btn btn-lg active" role="button" aria-pressed="true" style="height:120px;width:300px;padding:1em;background-color:lightgreen">View Logs by date<i class=" 	far fa-calendar"style="margin-left:14px"></i></a>
-        <a href="{% url 'deleteonosseclogconfirm' %}" class="btn btn btn-lg active" role="button" aria-pressed="true" style="height:120px;width:200px;padding:1em;margin-left: 10px;background-color:red">Delete all Logs<i class="fa fa-trash"style="margin-left:14px"></i></a>
-        </div
+    <div class="text-center mt-4 mx-3 mb-3">
+      <a href="{% url 'onossecdateform' %}" class="btn btn btn-lg active" role="button" aria-pressed="true"
+        style="height:55px;width:250px;background-color:lightgreen">View Logs by date<i
+          class=" 	far fa-calendar" style="margin-left:14px"></i></a>
+      <a href="{% url 'deleteonosseclogconfirm' %}" class="btn btn btn-lg active" role="button" aria-pressed="true"
+        style="height:55px;width:250px;margin-left: 10px;background-color:red">Delete all Logs<i
+          class="fa fa-trash" style="margin-left:14px"></i></a>
+    </div <div class="card-body table-responsive">
+    <table class="table table-bordered filter_datatable">
 
-            
+      <thead class="table" style="background-color:turquoise" ;>
+        <tr>
+          <th>Sl No.</th>
+          <th>Date/time</th>
+          <th>Source</th>
+          <th>Message</th>
+        </tr>
 
-                <div class="card-body table-responsive" >
-                   <table class="table table-bordered filter_datatable" >
+      </thead>
 
-                        <thead class="table"style="background-color:turquoise";>
-                        <tr>
-                            <th>Sl No.</th>
-                            <th>Date/time</th>
-                            <th>Source</th>
-                            <th>Message</th>
-                           
-                            
-                           
-                         </tr>
+      <tbody id="mydiv">
+        {% for x in logresponse %}
+        <tr bg="aliceblue">
+          <td>{{forloop.counter}}</td>
+          <td>{{x.datetime}}</td>
+          <td>{{x.app}}</td>
+          <td>{{x.status}}</td>
+        </tr>
+        {% endfor %}
 
-                      </thead>
-
-                      <tbody id="mydiv" >
-                        {% for x in logresponse %}
-
-                        
-                        <tr bgcolor="aliceblue" >
-                             <td>{{forloop.counter}}</td>
-                             <td>{{x.datetime}}</td>
-                             <td>{{x.app}}</td>
-                             <td>{{x.status}}</td>
-                            
-                            
-                                                                                                   
-                        </tr>
-
-                        
-                        
-                        {% endfor %}
-                            
-
-
-
-
-                     
-                      </tbody>
-                    </table>
-                </div>
-    </div>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 </div>
 {% endblock %}
 {% block javascript %}
 <script>
-
-
-
-  
-  </script>
+</script>
 
 {% endblock %}
