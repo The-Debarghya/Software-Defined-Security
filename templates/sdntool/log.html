@@ -5,15 +5,24 @@
   Software Defined Security
   <small class="text-muted">Version 1.0</small>
 </h4>
-<style>
+<div class="row mt-4">
+  <div class="col-sm-12">
 
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Home</a></li>
 
-</style>
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">View Activity Logs</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
 <div class="row mt-4" id="switchfault">
   <h3 class="card-header" style="background-color:aquamarine" ;> <i class="fas fa-clipboard"
       style="margin-right:14px"></i> SDS Log Management</h3>
-  <h4 class="card-header" style="background-color:antiquewhite" ;> <i class="fas fa-clipboard"
-      style="margin-right:14px"></i> View Logs</h4>
+  <h4 class="card-header" style="background-color:lightyellow; text-align: center;"> <i class="fas fa-clipboard"
+      style="margin-right:14px"></i> View Activity Logs</h4>
   <div class="col-sm-12" style="float:none;margin:auto;">
     <div class="text-center mt-4 mx-3 mb-3">
       <a href="{% url 'date' %}" class="btn btn btn-lg active" role="button" aria-pressed="true"

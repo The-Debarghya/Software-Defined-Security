@@ -1,91 +1,93 @@
 {% extends "sdntool/base.html" %}
 {% block content %}
+<h4></br>
+  Software Defined Security
+  <small class="text-muted">Version 1.0</small>
+</h4>
 <div class="row mt-4">
-    <div class="col-sm-12">
+  <div class="col-sm-12">
 
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Home</a></li>
-              
-              <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Users List</li>
-            </ol>
-          </nav> 
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Home</a></li>
 
-
-    </div>
-
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">User List</li>
+      </ol>
+    </nav>
+  </div>
 </div>
 
-<a class="btn btn-success" href="{% url 'createuserform' %}" role="button"> <i class="fas fa-user-plus"style="margin-right: 13px"></i>Create User</a>
+<a class="btn btn-success" href="{% url 'createuserform' %}" role="button"> <i class="fas fa-user-plus"
+    style="margin-right: 13px"></i>Create User</a>
 
 <div class="row mt-4">
-    <div class=col-sm-8 style="float:none;margin:auto;">
-        <div class="card">
-          <h3 class="card-header"style="background-color:aquamarine"> <i class="fas fa-users"style="margin-right:14px"></i> User Management</h3>
-            <h4 class="card-header"style="background-color:lightyellow"><i class="far fa-file-alt"style="margin-right:14px"></i>User List</h4>
-            <div class="card-body">
-                <table class="table" id="table"style="background-color:lightcyan">
-  <thead>
-    <tr>
-      <th scope="col">Sl.no.</th>
-      <th scope="col">Username</th>
-      <th scope="col">Role</th>
-      
-     
-    </tr>
-  </thead>
-  <tbody>
-  {% for x in userdata %}
-    <tr>
-      <td>{{forloop.counter}}</td>
-      <td>{{x.username}}</td>
-      <td>{{x.userrole}}</td>
-      
-     
-      <td><a class="btn btn-danger" href="{% url 'deleteuser' id=x.idusermanagement %}" role="button">Delete<i class="fa fa-trash" style="margin-left:13px"></i></a>
-      
-      
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
-            </div>
-        </div>
+  <div class=col-sm-8 style="float:none;margin:auto;">
+    <div class="card">
+      <h3 class="card-header" style="background-color:aquamarine"> <i class="fas fa-users"
+          style="margin-right:14px"></i> User Management</h3>
+      <h4 class="card-header" style="background-color:lightyellow; text-align: center;"><i class="far fa-file-alt"
+          style="margin-right:14px"></i>User List</h4>
+      <div class="card-body">
+        <table class="table" id="table" style="background-color:lightcyan">
+          <thead>
+            <tr>
+              <th scope="col">Sl.no.</th>
+              <th scope="col">Username</th>
+              <th scope="col">Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for x in userdata %}
+            <tr>
+              <td>{{forloop.counter}}</td>
+              <td>{{x.username}}</td>
+              <td>{{x.userrole}}</td>
+              <td><a class="btn btn-danger" href="{% url 'deleteuser' id=x.idusermanagement %}" role="button">Delete<i
+                    class="fa fa-trash" style="margin-left:13px"></i></a>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 
 </div>
 <!-- Main Col END -->
 
 <style>
-input, select {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  display: block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-input[type=submit] {
-  width: 50%;
-  background-color: #04AA6D;
-  color: white;
-  padding: 14px 20px;
-  margin:auto;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+  input,
+  select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
 
-input[type=submit]:hover {
-  background-color: #45a049;
-}
+  input[type=submit] {
+    width: 50%;
+    background-color: #04AA6D;
+    color: white;
+    padding: 14px 20px;
+    margin: auto;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
 
-div.container {
-  border-radius: 5px;
-  background-color: #f2f2f2;
-  padding: 20px;
-}
+  input[type=submit]:hover {
+    background-color: #45a049;
+  }
+
+  div.container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+  }
 </style>
 
 {% endblock %}

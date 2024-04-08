@@ -1,9 +1,27 @@
 {% extends "sdntool/base.html" %}
 {% block content %}
+<h4></br>
+    Software Defined Security
+    <small class="text-muted">Version 1.0</small>
+</h4>
+<div class="row mt-4">
+    <div class="col-sm-12">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Network Time Protocol</a></li>
+
+                <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">View NTP Config History
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
 <h3 class="card-header" style="background-color:aquamarine"> <i class="fas fa-clock" style="margin-right:14px"></i>
     Network Time Protocol</h3>
-<h4 class="card-header" style="background-color:antiquewhite"> <i class="fas fa-clock" style="margin-right:14px"></i>
-    View Configuration</h4>
+<h4 class="card-header" style="background-color:lightyellow; text-align: center;"> <i class="fas fa-clock" style="margin-right:14px"></i>
+    View NTP Config History</h4>
 
 <div class="card-body table-responsive">
     <table class="table table-bordered">

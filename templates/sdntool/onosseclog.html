@@ -5,23 +5,32 @@
   Software Defined Security
   <small class="text-muted">Version 1.0</small>
 </h4>
-<style>
+<div class="row mt-4">
+  <div class="col-sm-12">
 
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Home</a></li>
 
-</style>
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">View ONOS Security Logs</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
 <div class="row mt-4" id="switchfault">
   <h3 class="card-header" style="background-color:aquamarine" ;> <i class="fas fa-clipboard"
       style="margin-right:14px"></i> ONOS Security Log Management</h3>
-  <h4 class="card-header" style="background-color:antiquewhite" ;> <i class="fas fa-clipboard"
-      style="margin-right:14px"></i> View ONOS Logs</h4>
+  <h4 class="card-header" style="background-color:lightyellow; text-align: center;" > <i class="fas fa-clipboard"
+      style="margin-right:14px"></i> View ONOS Security Logs</h4>
   <div class="col-sm-12" style="float:none;margin:auto;">
     <div class="text-center mt-4 mx-3 mb-3">
       <a href="{% url 'onossecdateform' %}" class="btn btn btn-lg active" role="button" aria-pressed="true"
-        style="height:55px;width:250px;background-color:lightgreen">View Logs by date<i
-          class=" 	far fa-calendar" style="margin-left:14px"></i></a>
+        style="height:55px;width:250px;background-color:lightgreen">View Logs by date<i class=" 	far fa-calendar"
+          style="margin-left:14px"></i></a>
       <a href="{% url 'deleteonosseclogconfirm' %}" class="btn btn btn-lg active" role="button" aria-pressed="true"
-        style="height:55px;width:250px;margin-left: 10px;background-color:red">Delete all Logs<i
-          class="fa fa-trash" style="margin-left:14px"></i></a>
+        style="height:55px;width:250px;margin-left: 10px;background-color:red">Delete all Logs<i class="fa fa-trash"
+          style="margin-left:14px"></i></a>
     </div <div class="card-body table-responsive">
     <table class="table table-bordered filter_datatable">
 
