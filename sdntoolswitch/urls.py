@@ -1,5 +1,5 @@
-from django.urls import path, include, re_path
-from . import views
+from django.urls import path
+from sdntoolswitch import views
 
 urlpatterns = [
     path("", views.login, name="login"),
