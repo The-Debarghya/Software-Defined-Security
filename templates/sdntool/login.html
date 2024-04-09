@@ -19,8 +19,6 @@
 </style>
 
 <body>
-
-
   <div class="container">
     <div class="row">
       <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
@@ -28,12 +26,9 @@
           <div class="card-body p-4 p-sm-5">
             <h5 class="card-title text-center mb-5 fw-light fs-5"><img src="{% static 'images/jadav_logo.png' %}"
                 style="width: 100px; height:auto" class="img-circle">
-
               <br>
               <p style="font-weight:bold">Software Defined Security Management</p>
-
             </h5>
-
             {% if messages %}
             <div class="alert alert-danger" role="alert">
               <ul class="messages" style="list-style: none">
@@ -42,8 +37,6 @@
                 {% endfor %}
               </ul>
             </div>
-
-
             {% endif %}
             <form method="post" action="{% url 'logincontroller' %}">
               {% csrf_token %}
@@ -56,14 +49,10 @@
                   placeholder="Password">
                 <label for="floatingPassword">Password</label>
               </div>
-
-
               <div class="d-grid">
                 <button class="btn btn-success btn-login text-uppercase fw-bold" type="submit">Login
                 </button>
               </div>
-
-
             </form>
           </div>
         </div>

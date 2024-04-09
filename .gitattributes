@@ -1,2 +1,3 @@
-templates/* linguist-vendored
-static/* linguist-vendored
+templates/sdntool/* linguist-vendored
+sdntoolswitch/static/css/* linguist-vendored
+sdntoolswitch/static/js/* linguist-vendored

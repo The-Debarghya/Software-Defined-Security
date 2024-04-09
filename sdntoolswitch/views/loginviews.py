@@ -16,7 +16,7 @@ def login(request):
     """
     View for login page
     """
-    return render(request, "sdntool/index.html")
+    return render(request, "sdntool/login.html")
 
 
 def logincontroller(request):
@@ -100,4 +100,4 @@ def home(request):
         username = file.read()
     log_call(f"{username} logged in")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} logged in")
-    return render(request, "sdntool/home.html", {"ip": ip})
+    return render(request, "sdntool/home.html", {"ip": ip, "title": data["title"]})
