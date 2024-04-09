@@ -50,14 +50,14 @@
 
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'logout' %}" data-toggle="tooltip" data-placement="bottom"
-                    title="Log Out"><i class="fas fa-power-off"></i></a>
+                    title="Log Out"><i class="fas fa-sign-out-alt"></i></a>
             </li>
         </ul>
     </nav>
     <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
-            <nav class="sb-sidenav accordion sb-sidenav-light"
-                style="background-color: antiquewhite ;overflow-y: auto;" id="sidenavAccordion">
+            <nav class="sb-sidenav accordion sb-sidenav-light" style="background-color: antiquewhite ;overflow-y: auto;"
+                id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
                         <a class="nav-link" style="background-color:green;color:white" href="{% url 'home' %}">
@@ -168,7 +168,7 @@
                                     data-bs-target="#pagesCollapseAuthHTTPS" style="background-color:antiquewhite" ;
                                     aria-expanded="false" aria-controls="pagesCollapseAuth">
                                     <i class="fas fa-key" style="margin-right: 13px"></i>
-                                    HTTPS Authentication
+                                    HTTPS Configuration
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"
                                             style="color:black"></i></div>
                                 </a>
@@ -228,30 +228,33 @@
                                 </a>
                             </nav>
                         </div>
-
-                        <a class="nav-link" href="#" style="background-color:aquamarine;" aria-expanded="false"><span
-                                class="menu-collapsed"></span>
-                            <i class="fas fa-clock" style="margin-right: 13px"></i></span>
+                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
+                            data-bs-target="#pagesCollapseAuthNTP" style="background-color:antiquewhite" ;
+                            aria-expanded="false" aria-controls="pagesCollapseAuth">
+                            <i class="fas fa-key" style="margin-right: 13px"></i>
                             NTP Configuration
-
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down" style="color:black"></i>
+                            </div>
                         </a>
-                        {% if request.session.login.userrole != 'operator' %}
-                        <a href="{% url 'configntp' %}" class="nav-link">
-                            <span class="menu-collapsed"><i class="fas fa-server"
-                                    style="margin-right: 13px"></i>Configure NTP</span>
-                        </a>
-
-
-                        <a href="{% url 'configntp' %}" class="nav-link">
-                            <span class="menu-collapsed"><i class="fas fa-server" style="margin-right: 13px"></i>Modify
-                                Configuration</span>
-                        </a>
-                        {% endif %}
-
-                        <a href="{% url 'ntp' %}" class="nav-link">
-                            <span class="menu-collapsed"><i class="fas fa-server" style="margin-right: 13px"></i>View
-                                Configuration</span>
-                        </a>
+                        <div class="collapse" id="pagesCollapseAuthNTP" aria-labelledby="headingOne"
+                            data-bs-parent="#sidenavAccordionPages">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                {% if request.session.login.userrole != 'operator' %}
+                                <a href="{% url 'configntp' %}" class="nav-link">
+                                    <span class="menu-collapsed"><i class="fas fa-server"
+                                            style="margin-right: 13px"></i>Configure NTP</span>
+                                </a>
+                                <a href="{% url 'configntp' %}" class="nav-link">
+                                    <span class="menu-collapsed"><i class="fas fa-server"
+                                            style="margin-right: 13px"></i>Modify configuration</span>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'ntp' %}" class="nav-link">
+                                    <span class="menu-collapsed"><i class="fas fa-server"
+                                            style="margin-right: 13px"></i>View configuration</span>
+                                </a>
+                            </nav>
+                        </div>
                         {% if request.session.login.userrole == 'admin' %}
 
                         <a class="nav-link" href="{% url 'onosseclog' %}" style="background-color:cadetblue;color:white"

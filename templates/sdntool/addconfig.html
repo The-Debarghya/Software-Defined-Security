@@ -1,102 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-  {% load static %}
-<head>
-    <meta charset="UTF-8">
-    
+{% load static %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css?{% now 'U' %}" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
-      crossorigin="anonymous"></script>
-   
-<link href="{% static 'css/styles.css' %}?{% now 'U' %}" rel="stylesheet"/>
-    </head>
-    <body>
-      <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-      <ul class="navbar-nav ms-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'logout' %}" data-toggle="tooltip" data-placement="bottom" title="Log Out"><i class="fas fa-sign-out-alt"></i></a>
-    </li>
-    </ul>
+<head>
+  <meta charset="UTF-8">
+  <link href="{% static 'css/bootstrap.min.css' %}?{% now 'U' %}" rel="stylesheet" crossorigin="anonymous">
+  <script src="{% static 'js/all.min.js' %}?{% now 'U' %}" crossorigin="anonymous"></script>
+
+  <link href="{% static 'css/styles.css' %}?{% now 'U' %}" rel="stylesheet" />
+</head>
+
+<body>
+  <nav class="sb-topnav navbar navbar-expand navbar-light"
+        style="height:100px;background-color:turquoise;border:BLACK 2px SOLID">
+        <!-- Navbar Brand-->
+        <a class="navbar-brand ps-3" href="{% url 'home' %}"><img src="{% static 'images/jadav_logo.png' %}"
+                style="width:100px; height: 100px; margin: 3px; padding: 5px">SDS</a>
+        <!-- Navbar-->
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" style="color:black">
+                    Hello, {{ request.session.login.username }}
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}" data-toggle="tooltip" data-placement="bottom"
+                    title="Log Out"><i class="fas fa-sign-out-alt"></i></a>
+            </li>
+        </ul>
     </nav>
-    </body>
+</body>
 <div class="row mt-4">
-    <div class=col-sm-8 style="float:none;margin:auto;">
-        <div class="card bg-light">
-          <h3 class="card-header "style="background-color:turquoise";> <i class="fas fa-cog"style="margin-right:14px"></i>ONOS Configuration Settings</h3>
-            <h4 class="card-header "style="background-color:antiquewhite";> <i class="fas fa-plus"style="margin-right:14px"></i>Add ONOS configuration</h4>
-            <div class="card-body">
-                <form action="{% url 'configcontroller' %} " method="post">
-                {% csrf_token %}
-                   
-                    <label for="onosip">ONOS ip</label>
-                    <input type="text" id="onosip" class="fadeIn second" name="onosip" required >
-                    <label for="onosport">ONOS port</label>
-                    <input type="text" id="onosport" value="8181" class="fadeIn second" name="onosport" required >
-                    
-             
-                    <label for="onosuser">ONOS Username</label>
-                    <input type="text" id="onosuser" class="fadeIn second" value="onos" name="onosuser" required>
-                    <label for="onospwd">ONOS password</label>
-                    <input type="password" id="onospwd"  class="fadeIn second" name="onospwd" required >
-                    <label for="onospwdcnf">Confirm ONOS password</label>
-                    <input type="password" id="onospwdcnf"  class="fadeIn second" name="onospwdcnf" required>
-                    <input type="submit" class="fadeIn fourth" value="Submit">
-                    <div class="text-center mt-4">
-                    <a href="{% url 'home' %}" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Return to previous configuration</a>
-                    </div>
-            </form>
-            </div>
-        </div>
-        {% for message in messages %}
-        <div class="container-fluid mt-2 mx-4">
-          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
-            
-            {{ message }}
+  <div class=col-sm-8 style="float:none;margin:auto;">
+    <div class="card bg-light">
+      <h3 class="card-header " style="background-color:turquoise" ;> <i class="fas fa-cog"
+          style="margin-right:14px"></i>ONOS Configuration Settings</h3>
+      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"> <i class="fas fa-plus"
+          style="margin-right:14px"></i>Add ONOS configuration</h4>
+      <div class="card-body">
+        <form action="{% url 'configcontroller' %} " method="post">
+          {% csrf_token %}
+
+          <label for="onosip">ONOS ip</label>
+          <input type="text" id="onosip" class="fadeIn second" name="onosip" required>
+          <label for="onosport">ONOS port</label>
+          <input type="text" id="onosport" value="8181" class="fadeIn second" name="onosport" required>
+
+
+          <label for="onosuser">ONOS Username</label>
+          <input type="text" id="onosuser" class="fadeIn second" value="onos" name="onosuser" required>
+          <label for="onospwd">ONOS password</label>
+          <input type="password" id="onospwd" class="fadeIn second" name="onospwd" required>
+          <label for="onospwdcnf">Confirm ONOS password</label>
+          <input type="password" id="onospwdcnf" class="fadeIn second" name="onospwdcnf" required>
+          <input type="submit" class="fadeIn fourth" value="Submit">
+          <div class="text-center mt-4">
+            <a href="{% url 'home' %}" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Return to
+              previous configuration</a>
           </div>
-        </div>
-        {% endfor %}
+        </form>
+      </div>
     </div>
+    {% for message in messages %}
+    <div class="container-fluid mt-2 mx-4">
+      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+
+        {{ message }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 
 </div>
 <!-- Main Col END -->
 
 <style>
-input, select {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  display: block;
-  background-color:white;
-  border: 1px solid black;
-  border-radius: 4px;
-  box-sizing: border-box;
-  
-}
-input[type=submit] {
-  width: 13%;
-  background-color:green;
-  color:white;
-  padding: 14px 20px;
-  margin:auto;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+  input,
+  select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: block;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 4px;
+    box-sizing: border-box;
 
-input[type=submit]:hover {
-  background-color: #45a049;
-}
+  }
 
-div.container {
-  border-radius: 5px;
-  background-color: #f2f2f2;
-  padding: 20px;
-  color:red
-}
+  input[type=submit] {
+    width: 13%;
+    background-color: green;
+    color: white;
+    padding: 14px 20px;
+    margin: auto;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
 
+  input[type=submit]:hover {
+    background-color: #45a049;
+  }
+
+  div.container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+    color: red
+  }
 </style>
 
 </body>
+
 </html>

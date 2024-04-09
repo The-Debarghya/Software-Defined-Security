@@ -1,7 +1,8 @@
 {% extends "sdntool/base.html" %} {% block content %}
-
-
-
+<h4></br>
+  Software Defined Security
+  <small class="text-muted">Version 1.0</small>
+</h4>
 <div class="row mt-4">
   <div class="col-sm-12">
 
@@ -10,24 +11,20 @@
         <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Network Time Protocol</a>
         </li>
 
-        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Configure/Enable NTP</li>
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">Modify NTP Configuration
+        </li>
       </ol>
     </nav>
-
-
   </div>
-
 </div>
-
-
 
 <div class="row mt-4">
   <div class=col-sm-8 style="float:none;margin:auto;">
     <div class="card bg-light">
       <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
           style="margin-right:14px"></i>Network Time Protocol</h3>
-      <h4 class="card-header " style="background-color:antiquewhite" ;><i class="fas fa-plus"
-          style="margin-right:14px"></i>Enable NTP</h4>
+      <h4 class="card-header " style="background-color:lightyellow; text-align: center;" ;><i class="fas fa-plus"
+          style="margin-right:14px"></i>Modify NTP</h4>
       <div class="card-body">
         <form action="{% url 'configntp' %}" method="post">
           {% csrf_token %}

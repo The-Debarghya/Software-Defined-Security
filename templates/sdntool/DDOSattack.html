@@ -2,81 +2,75 @@
 
 
 <h4></br>
-    Secure Software Define Network
-    <small class="text-muted">Version 1.2</small>
+  Software Defined Security
+  <small class="text-muted">Version 1.0</small>
 </h4>
-<style>
+<div class="row mt-4">
+  <div class="col-sm-12">
 
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">Security Functions</a>
+        </li>
 
-</style>
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">DDoS attack detection
+        </li>
+      </ol>
+    </nav>
+  </div>
+</div>
 <div class="row mt-4" id="portfault">
-    <div class="col-sm-12" style="float:none;margin:auto;">
-      <h3 class="card-header"style="background-color:aquamarine";><i class="fas fa-exclamation-triangle"style="margin-right:14px"></i>DDOS attack detection</h3>
-      {% for message in messages %}
-        <div class="container-fluid mt-2 mx-4">
-          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
-            {{ message }}
-            {% if message.tags == 'alert-error' %}
+  <div class="col-sm-12" style="float:none;margin:auto;">
+    <h3 class="card-header" style="background-color:aquamarine" ;><i class="fas fa-exclamation-triangle"
+        style="margin-right:14px"></i>DDOS attack detection</h3>
+    {% for message in messages %}
+    <div class="container-fluid mt-2 mx-4">
+      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+        {{ message }}
+        {% if message.tags == 'alert-error' %}
 
-            <script>alert("{{message}}")</script>
-            {% endif %}
-          </div>
-        </div>
-        {% endfor %}
-      
-                <div class="card-body table-responsive">
-                            <table class="table table-bordered"  style="" >
-
-                        <thead class="table-dark">
-                        <tr>
-                            <th>Device id</th>
-                            <th>Port no</th>
-                            
-                        </tr>
-
-                      </thead>
-
-                      <tbody>
-                        {% for x in portfaultresponse %}
-                        
-                        
-                        <tr bgcolor="tomato">
-                            <td> {{x.id}} </td>
-                            <td>{{x.port}}</td>
-                            
-                                                      
-                        </tr>
-                        
-                                               
-                        {% endfor %}
-                            
-
-
-
-
-                     
-                      </tbody>
-                    </table>
-                </div>
+        <script>alert("{{message}}")</script>
+        {% endif %}
+      </div>
     </div>
+    {% endfor %}
+
+    <div class="card-body table-responsive">
+      <table class="table table-bordered">
+
+        <thead class="table-dark">
+          <tr>
+            <th>Device id</th>
+            <th>Port no</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+          {% for x in portfaultresponse %}
+          <tr bg="orange">
+            <td> {{x.id}} </td>
+            <td>{{x.port}}</td>
+
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
 {% endblock %}
- {% block javascript %}
-<script> 
+{% block javascript %}
+<script>
+  $(document).ready(function () {
+    setInterval(function () {
 
- 
- 
-
-
-   $(document).ready(function(){
-      setInterval(function() {  
-         
- 
-       
-         $("#portfault").load(location.href+" #portfault>*","");
-        }, 2000);
+      $("#portfault").load(location.href + " #portfault>*", "");
+    }, 2000);
 
   });
-  </script> 
-  {% endblock %} 
+</script>
+{% endblock %}

@@ -1,72 +1,73 @@
 {% extends "sdntool/base.html" %} {% block content %}
 
 
-
-
-
-
-
 <div class="row mt-4">
-    <div class=col-sm-8 style="float:none;margin:auto;">
-        <div class="card">
-            <h3 class="card-header"style="background-color:aquamarine"><i class="fas fa-trash"style="margin-right:14px"></i> Delete Logs</h3>
-            <h4 class="card-header"style="background-color:lightyellow"><i class="fas fa-question"style="margin-right:14px"></i> Are you sure you want to delete logs?</h4>
-            <div class="card-body">
-                <h4></p>
-                <div class="text-center mt-4">
-                    <a href="{% url 'deletelogs' %}" class="btn btn-primary btn-lg active" role="button"  style="background-color:green" aria-pressed="true">Yes</a>
-                    </div>
-                    <div class="text-center mt-4">
-                    <a href="{% url 'logmanagement' %}" class="btn btn btn-lg active" role="button" style="background-color:red" aria-pressed="true">No</a>
-                    </div>
-            </form>
-            </div>
-        </div>
-        <div id="formFooter">
-                {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                    <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            </div>
+  <div class=col-sm-8 style="float:none;margin:auto;">
+    <div class="card">
+      <h3 class="card-header" style="background-color:aquamarine"><i class="fas fa-trash" style="margin-right:14px"></i>
+        Delete Logs</h3>
+      <h4 class="card-header" style="background-color:lightyellow"><i class="fas fa-question"
+          style="margin-right:14px"></i> Are you sure you want to delete logs?</h4>
+      <div class="card-body">
+        <h4>
+          </p>
+          <div class="text-center mt-4">
+            <a href="{% url 'deletelogs' %}" class="btn btn-primary btn-lg active" role="button"
+              style="background-color:green" aria-pressed="true">Yes</a>
+          </div>
+          <div class="text-center mt-4">
+            <a href="{% url 'logmanagement' %}" class="btn btn btn-lg active" role="button" style="background-color:red"
+              aria-pressed="true">No</a>
+          </div>
+          </form>
+      </div>
     </div>
+    <div id="formFooter">
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
 
 </div>
 <!-- Main Col END -->
 
 <style>
-input, select {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  display: block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-input[type=submit] {
-  width: 50%;
-  background-color: #04AA6D;
-  color: white;
-  padding: 14px 20px;
-  margin:auto;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+  input,
+  select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
 
-input[type=submit]:hover {
-  background-color: #45a049;
-}
+  input[type=submit] {
+    width: 50%;
+    background-color: #04AA6D;
+    color: white;
+    padding: 14px 20px;
+    margin: auto;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
 
-div.container {
-  border-radius: 5px;
-  background-color: #f2f2f2;
-  padding: 20px;
-}
+  input[type=submit]:hover {
+    background-color: #45a049;
+  }
 
+  div.container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+  }
 </style>
 
 {% endblock %}

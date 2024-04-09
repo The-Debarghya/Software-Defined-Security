@@ -2,89 +2,59 @@
 
 
 <h4></br>
-    Secure Software Define Network
-    <small class="text-muted">Version 1.2</small>
+  Software Defined Security
+  <small class="text-muted">Version 1.2</small>
 </h4>
-<style>
+<div class="row mt-4">
+  <div class="col-sm-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="text-decoration: none;">AAA Management</a></li>
+        <li class="breadcrumb-item active" aria-current="page" style="text-decoration: none;">View Config</li>
+      </ol>
+    </nav>
+  </div>
+</div>
 
-
-</style>
 <div class="row mt-4" id="switchfault">
-  <h4 class="card-header"style="background-color:aquamarine"> <i class="fas fa-home"style="margin-right:14px"></i>AAA Management</h4>
-  <h4 class="card-header"style="background-color:antiquewhite"> <i class="fas fa-laptop-code"style="margin-right:14px"></i>View Configuration</h4>
-    <div class="col-sm-12" style="float:none;margin:auto;">
-      <div class="text-center mt-4 mx-3 mb-3">
-        {% for message in messages %}
-        <div class="container-fluid mt-2 mx-4">
-          <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert" >
-            
-            {{ message }}
-          </div>
+  <h4 class="card-header" style="background-color:aquamarine"> <i class="fas fa-home" style="margin-right:14px"></i>AAA
+    Management</h4>
+  <h4 class="card-header" style="background-color:lightyellow; text-align: center;"> <i class="fas fa-laptop-code"
+      style="margin-right:14px"></i>View Configuration</h4>
+  <div class="col-sm-12" style="float:none;margin:auto;">
+    <div class="text-center mt-4 mx-3 mb-3">
+      {% for message in messages %}
+      <div class="container-fluid mt-2 mx-4">
+        <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+
+          {{ message }}
         </div>
-        {% endfor %}
-
-        
-        </div
-
-            
-
-                <div class="card-body table-responsive" >
-                   <table class="table table-bordered filter_datatable" >
-
-                        <thead class="table" style="background-color:turquoise;">
-                        <tr>
-                            <th>Sl No.</th>
-                            <th>Radius IP</th>
-                            <th>Status</th>
-                            
-                            
-                           
-                         </tr>
-
-                      </thead>
-
-                      <tbody id="mydiv" >
-                       
-
-                        
-                        <tr bgcolor="lightcyan" >
-
-                             <td>1</td>
-                             <td>{{radius}}</td>
-                             <td>Configured</td>
-
-                        </tr>
-                        
-
-                                                                                    
-                       
-
-                        
-                        
-                       
+      </div>
+      {% endfor %}
 
 
-                     
-                      </tbody>
-                    </table>
-                </div>
-    </div>
+    </div <div class="card-body table-responsive">
+    <table class="table table-bordered filter_datatable">
+      <thead class="table" style="background-color:turquoise;">
+        <tr>
+          <th>Sl No.</th>
+          <th>Radius IP</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="mydiv">
+        <tr bg="lightcyan">
+          <td>1</td>
+          <td>{{radius}}</td>
+          <td>Configured</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 </div>
 {% endblock %}
 {% block javascript %}
-<script>
-
-
-
-  
-  </script>
 
 {% endblock %}
-
-
-
-
-    
-
-
