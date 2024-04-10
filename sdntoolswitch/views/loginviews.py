@@ -1,9 +1,10 @@
+import json
 import syslog
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.models import Usermanagement
+from sdntoolswitch.models import OnosServerManagement, Usermanagement
 from sdntoolswitch.formvalidation import Validator
 from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.activitylogs import *
@@ -27,8 +28,6 @@ def logincontroller(request):
     global password
     username = request.POST.get("username")
     password = request.POST.get("password")
-    with open("username.txt", "w") as file:
-        file.write(username)
 
     validator = Validator(
         {
@@ -63,7 +62,7 @@ def logincontroller(request):
                 )
                 return redirect("login")
         else:
-            messages.error(request, "User does not exists", extra_tags="loginerror")
+            messages.error(request, "User does not exist", extra_tags="loginerror")
             return redirect("login")
 
 
@@ -72,13 +71,11 @@ def logout(request):
     Controller for logout
     """
     global username
+    username = request.session["login"]["username"]
     del request.session["login"]
-    with open("iplist.txt", "w") as file:
-        file.truncate()
+    OnosServerManagement.objects.filter(usercreated=username).delete()
     with open("portconf.json", "w") as file:
         file.truncate()
-    with open("username.txt") as file:
-        username = file.read()
     log_call(f"{username} logged out")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} logged out")
     return redirect("login")
@@ -93,11 +90,14 @@ def home(request):
     data = {
         "title": "Dashboard",
     }
-    with open("iplist.txt", "r") as file:
-        ip = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
 
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
     log_call(f"{username} logged in")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} logged in")
-    return render(request, "sdntool/home.html", {"ip": ip, "title": data["title"]})
+    return render(request, "sdntool/home.html", {"ip": iplist, "title": data["title"]})

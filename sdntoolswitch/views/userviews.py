@@ -32,8 +32,7 @@ def Createuser(request):
         username=user, password=password, userrole=type
     )
     userdata.save()
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     log_call(f"{username} created new {type} user {user}")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} created new {type} user {user}")
@@ -48,8 +47,7 @@ def deleteuser(request, id):
     userdata = Usermanagement.objects.get(idusermanagement=id)
     userdata.status = "INACTIVE"
     userdata.save()
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     log_call(f"{username} deleted {userdata.userrole} user {userdata.username}")
     syslog.syslog(
@@ -66,8 +64,7 @@ def users(request):
     """
     global username
     userdata = Usermanagement.objects.filter(status="ACTIVE")
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     log_call(f"{username} monitored user details")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} monitored user details")

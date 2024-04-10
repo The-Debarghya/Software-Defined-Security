@@ -6,6 +6,7 @@ from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from sdntoolswitch.activitylogs import *
+from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
@@ -15,26 +16,34 @@ def addfire(request):
     """
     View for adding firewall rules
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
 
     if request.method == "GET":
         return render(request, "sdntool/addrulesip.html", {"ip": iplist})
 
     try:
         ip = request.POST.get("ip")
-        with open("firewallip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        host = str(record.primaryip)
+        if ip == host:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP given as input")
         return redirect("addfire")
     try:
-        global onos_username
-        global onos_password
-        with open("config.json", "r") as file:
-            config = json.load(file)
-            onos_username = config["onos_user"]
-            onos_password = config["onos_pwd"]
+        username = request.session["login"]["username"]
+        record = OnosServerManagement.objects.get(usercreated=username)
+        configarr = json.loads(record.multipleconfigjson)
+        config = [i for i in configarr if i["ip"] == ip][0]
+        onos_username = config["onos_user"]
+        onos_password = config["onos_pwd"]
         deviceresponse = dict(
             requests.get(
                 "http://" + str(ip) + ":8181/onos/v1/devices",
@@ -58,12 +67,12 @@ def addfirecontroller(request):
     devid = request.POST.get("devid")
     protocol = request.POST.get("protocol")
     action = request.POST.get("action")
-    global onos_username
-    global onos_password
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == ip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     requests.post(
         "http://"
         + str(ip)
@@ -78,8 +87,6 @@ def addfirecontroller(request):
 
     messages.success(request, "Firewall rule added!")
     messages.info(request, "Firewall Management Configured")
-    with open("username.txt") as file:
-        username = file.read()
     log_call(f"{username} added firewall rule by source")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} added firewall rule by source")
 
@@ -90,9 +97,12 @@ def addrulesbyport(request):
     """
     View for adding firewall rules by port
     """
-    with open("iplist.txt", "r") as file:
-
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
 
     if request.method == "GET":
 
@@ -101,20 +111,22 @@ def addrulesbyport(request):
     try:
 
         ip = request.POST.get("ip")
-        with open("firewallip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        host = str(record.primaryip)
+        if ip == host:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP given as input")
         return redirect("addrulesbyport")
     try:
-        global onos_username
-        global onos_password
-        global port_num
-        with open("config.json", "r") as file:
-            config = json.load(file)
-            onos_username = config["onos_user"]
-            onos_password = config["onos_pwd"]
-            port_num = config["port_num"]
+        username = request.session["login"]["username"]
+        record = OnosServerManagement.objects.get(usercreated=username)
+        configarr = json.loads(record.multipleconfigjson)
+        config = [i for i in configarr if i["ip"] == ip][0]
+        onos_username = config["onos_user"]
+        onos_password = config["onos_pwd"]
         deviceresponse = dict(
             requests.get(
                 "http://" + str(ip) + ":8181/onos/v1/devices",
@@ -145,14 +157,13 @@ def addrulesbyportcontroller(request):
         messages.error(request, "Not a valid port")
 
         return redirect("addrulesbyport")
-    global onos_username
-    global onos_password
-    global port_num
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
-        port_num = config["port_num"]
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == ip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
+    port_num = config["port_num"]
     requests.post(
         "http://"
         + str(ip)
@@ -171,8 +182,6 @@ def addrulesbyportcontroller(request):
 
     messages.success(request, "Firewall rule added!")
     messages.info(request, "Firewall Management Configured")
-    with open("username.txt") as file:
-        username = file.read()
     log_call(f"{username} added firewall rule by port")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} added firewall rule by port")
 
@@ -183,16 +192,15 @@ def viewrules(request):
     """
     Viewing firewall rules
     """
-    with open("firewallip.txt", "r") as file:
-        firewallip = file.read()
-    global onos_username
-    global onos_password
-    global port_num
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
-        port_num = config["port_num"]
+    record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+    firewallip = str(record.primaryip)
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == firewallip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
+    port_num = config["port_num"]
     try:
         response = requests.get(
             "http://"
@@ -208,8 +216,6 @@ def viewrules(request):
         messages.error(request, "No Rules Added")
         return render(request, "sdntool/viewrules.html")
 
-    with open("username.txt") as file:
-        username = file.read()
     log_call(f"{username} viewed firewall rules")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed firewall rules")
 
@@ -222,14 +228,14 @@ def deleterules(request, id):
     """
     Deleting firewall rule by id
     """
-    with open("firewallip.txt", "r") as file:
-        firewallip = file.read()
-    global onos_username
-    global onos_password
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
+    record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+    firewallip = str(record.primaryip)
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == firewallip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     requests.delete(
         "http://" + firewallip + ":8181/onos/firewall-app/firewall/remove/" + id,
         auth=HTTPBasicAuth(onos_username, onos_password),
@@ -248,25 +254,31 @@ def addrulesbysrc(request):
     """
     View for adding firewall rules by source
     """
-    with open("iplist.txt", "r") as file:
-
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
 
     if request.method == "GET":
         return render(request, "sdntool/addrulessrcip.html", {"ip": iplist})
     try:
         ip = request.POST.get("ip")
-        with open("firewallip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        host = str(record.primaryip)
+        if ip == host:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP given as input")
         return redirect("addrulesbysrc")
-    global onos_username
-    global onos_password
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == ip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     try:
         hostresponse = dict(
             requests.get(
@@ -301,12 +313,12 @@ def addrulesbysrccontroller(request):
         )
 
         return redirect("addrulesbysrc")
-    global onos_username
-    global onos_password
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == ip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     requests.post(
         "http://"
         + str(ip)
@@ -323,8 +335,6 @@ def addrulesbysrccontroller(request):
 
     messages.success(request, "Firewall rule added!")
     messages.info(request, "Firewall Management Configured")
-    with open("username.txt") as file:
-        username = file.read()
     log_call(f"{username} added firewall rule by source")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} added firewall rule by source")
 

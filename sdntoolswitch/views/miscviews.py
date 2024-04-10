@@ -8,6 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from sdntoolswitch.activitylogs import *
+from sdntoolswitch.models import OnosServerManagement, NtpConfigRecords
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
@@ -21,17 +22,25 @@ def configntp(request):
     """
     Adding NTP server to the list of NTP servers
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
     if request.method == "GET":
         return render(request, "sdntool/configntp.html", {"ip": iplist})
     server = request.POST.get("server")
     ip = request.POST.get("ip")
-    username = request.POST.get("user")
+    sshuser = request.POST.get("user")
     password = request.POST.get("password")
     try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        primaryip = str(record.primaryip)
+        if ip == primaryip:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP is given as input")
         return redirect("home")
@@ -41,7 +50,7 @@ def configntp(request):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        ssh.connect(hostname=host, port=port, username=sshuser, password=password)
         sleeptime = 0.001
         outdata, errdata = b"", b""
         ssh_transp = ssh.get_transport()
@@ -66,23 +75,21 @@ def configntp(request):
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     print(outdata, errdata)
-    with open("username.txt") as file:
-        username = file.read()
-    with open("ntpdata.json", "r") as f:
-        try:
-            d = json.loads(f.read())
-        except Exception:
-            d = []
-    for idx, di in enumerate(d):
-        if di["ip"] == ip:
-            di["server"] = server
-            di["comment"] = outdata.decode("utf-8")
-            d[idx] = di
-
-    if {"server": server, "ip": ip, "comment": outdata.decode("utf-8")} not in d:
-        d.append({"server": server, "ip": ip, "comment": outdata.decode("utf-8")})
-    with open("ntpdata.json", "w") as f:
-        f.write(json.dumps(d))
+    username = request.session["login"]["username"]
+    record = NtpConfigRecords.objects.get(usercreated=username, ip=ip)
+    if record is not None:
+        if record.ntpserver == server:
+            record.output = outdata.decode("utf-8")
+            record.save()
+        else:
+            record.ntpserver = server
+            record.output = outdata.decode("utf-8")
+            record.save()
+    else:
+        data = NtpConfigRecords.objects.create(
+            ntpserver=server, ip=ip, usercreated=username, output=outdata.decode("utf-8")
+        )
+        data.save()
     sec_log_call(f"{username} configured NTP on {ip} with {server}")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} configured NTP on {ip} with {server}")
 
@@ -95,13 +102,15 @@ def ddos(request):
     View for DDOS attack detection
     """
     portfaultcounter = 0
-    with open("iplist.txt", "r") as file:
-        ip = str(file.read())
+    record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+    ip = str(record.primaryip)
     if os.stat("portconf.json").st_size == 0:
-        with open("config.json", "r") as file:
-            config = json.load(file)
-        onos_username = config["onos_user"] if "onos_user" in config.keys() else "onos"
-        onos_password = config["onos_pwd"] if "onos_pwd" in config.keys() else "rocks"
+        username = request.session["login"]["username"]
+        record = OnosServerManagement.objects.get(usercreated=username)
+        configarr = json.loads(record.multipleconfigjson)
+        config = [i for i in configarr if i["ip"] == ip][0]
+        onos_username = config["onos_user"]
+        onos_password = config["onos_pwd"]
         portapi = dict(
             requests.get(
                 f"http://{ip}:8181/onos/v1/devices/ports",
@@ -126,10 +135,12 @@ def ddos(request):
     portconfiguration = json.loads((portdata))
 
     portfaultresponse = list()
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"] if "onos_user" in config.keys() else "onos"
-        onos_password = config["onos_pwd"] if "onos_pwd" in config.keys() else "rocks"
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == ip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     allportapi = dict(
         requests.get(
             f"http://{ip}:8181/onos/v1/devices/ports",
@@ -170,9 +181,13 @@ def ntp(request):
     View for NTP configuration
     """
     try:
-        with open("ntpdata.json", "r") as f:
-            data = json.loads(f.read())
-
+        username = request.session["login"]["username"]
+        data = NtpConfigRecords.objects.filter(usercreated=username).values()
+        if data is None:
+            data = []
+        else:
+            data = list(data)
+            data = [{"server": i[0], "ip": i[1], "output": i[3]} for i in data]
     except Exception:
         data = []
     return render(request, "sdntool/ntp.html", {"data": data})

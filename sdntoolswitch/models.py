@@ -13,3 +13,21 @@ class Usermanagement(models.Model):
 
     class Meta:
         db_table = "usermanagement"
+
+class OnosServerManagement(models.Model):
+    idonosservermanagement = models.BigAutoField(primary_key=True)
+    primaryip = models.CharField(max_length=200)
+    usercreated = models.ForeignKey(Usermanagement, on_delete=models.CASCADE)
+    multipleconfigjson = models.TextField()
+
+    class Meta:
+        db_table = "onosservermanagement"
+
+class NtpConfigRecords(models.Model):
+    ntpserver = models.CharField(max_length=200)
+    ip = models.CharField(max_length=200)
+    usercreated = models.ForeignKey(Usermanagement, on_delete=models.CASCADE)
+    output = models.TextField()
+
+    class Meta:
+        db_table = "ntpconfigrecords"

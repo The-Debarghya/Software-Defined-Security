@@ -1,3 +1,4 @@
+import json
 import os
 import syslog
 import paramiko
@@ -5,6 +6,7 @@ import paramiko
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from sdntoolswitch.activitylogs import *
+from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
@@ -16,8 +18,12 @@ def modifytls(request):
     """
     View for modifying TLS
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
     if request.method == "GET":
         return render(request, "sdntool/modifytls.html", {"ip": iplist})
     status = request.POST.get("status")
@@ -27,21 +33,25 @@ def modifytls(request):
     trustpassword = request.POST.get("trustpassword")
     ip = request.POST.get("ip")
     try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        primaryip = str(record.primaryip)
+        if ip == primaryip:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP is given as input")
         return redirect("modifytls")
 
     host = str(ip)
     port = 22
-    username = request.POST.get("sshuser")
+    sshuser = request.POST.get("sshuser")
     password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
@@ -85,8 +95,7 @@ def modifytls(request):
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifytls")
 
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     sec_log_call(f"{username} modified TLS")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} modified TLS")
@@ -110,28 +119,36 @@ def disabletlsconfirm(request):
     """
     Controller for disabling TLS
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
     if request.method == "GET":
         return render(request, "sdntool/disabletlsip.html", {"ip": iplist})
     ip = request.POST.get("ip")
 
     try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        primaryip = str(record.primaryip)
+        if ip == primaryip:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP is given as input")
         return redirect("disabletlsconfirm")
 
     host = str(ip)
     port = 22
-    username = request.POST.get("sshuser")
+    sshuser = request.POST.get("sshuser")
     password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
@@ -153,8 +170,7 @@ def disabletlsconfirm(request):
 
     messages.error(request, "TLS Disabled")
     messages.info(request, "TLS configured")
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     sec_log_call(f"{username} disabled TLS")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} disabled TLS")
@@ -173,8 +189,8 @@ def viewtls(request):
     View for viewing TLS configuration
     """
     global ipconfiglist
-    with open("userip.txt", "r") as file:
-        ip = file.read()
+    record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+    ip = str(record.primaryip)
 
     host = str(ip)
     port = 8101
@@ -234,20 +250,13 @@ def viewtls(request):
                 ipstatus = ipconfiglist[j]
 
         newipconfiglist.append(ipstatus)
-    ###########################################################
-
     ####### Storing only unique values##################
     ipstatuslist = list()
     for i in newipconfiglist:
         if i not in ipstatuslist:
             ipstatuslist.append(i)
-    #######################################################
 
-    for i in ipstatuslist:
-        with open("overallstatus.txt", "a") as file:
-            file.write(i["ip"] + " " + i["status"] + " " + i["name"] + "\n")
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     sec_log_call(f"{username} viewed TLS configuration")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed TLS configuration")

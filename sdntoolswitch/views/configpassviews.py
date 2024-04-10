@@ -8,6 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from sdntoolswitch.activitylogs import *
+from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 from sdntoolswitch.utils import *
@@ -28,55 +29,62 @@ def addconfig(request):
     onosport = request.POST.get("onosport")
 
     onosconfig = {
-        "port_num": str(onosport),
+        "port_num": int(onosport),
         "onos_user": str(onosusername),
         "onos_pwd": str(onospassword),
         "api_url": "http://" + str(onosip) + ":" + str(onosport) + "/onos/v1/",
         "ip": str(onosip),
     }
-    onosconfigjson = json.dumps(onosconfig)  ########## converts dictionary to json
-    with open("config.json", "w") as outfile:
-        outfile.write(onosconfigjson)  ###### writing json to file
-    outfile.close()
-    with open("config.json") as config_file:
-        data = config_file.read()
-    config = json.loads(data)  ####### reading the json file
-
-    global port_num
-    global onos_username
-    global onos_password
-    global onos_api
-    global onos_ip
-
-    port_num = config["port_num"]
-    onos_username = config["onos_user"]
-    onos_password = config["onos_pwd"]
-    onos_api = config["api_url"]
-    onos_ip = config["ip"]
-    ######### checking if ONOS configured at the input Ip address##########
-    try:
-        dict(
-            requests.get(
-                onos_api + "devices",
-                auth=HTTPBasicAuth(onos_username, onos_password),
-            ).json()
-        )
-    except:
-        messages.error(
-            request, "Wrong Input Credentials or ONOS not configured at this ip address"
-        )
-        return redirect("configcontroller")
-    ###############################################################################
-    if pwdcheck:  #### if password and confirmed passwords match
-        with open("ipbackup.txt", "w") as file:
-            pass
-        with open("iplist.txt", "a") as file:
-            file.write(onosip + "\n")
-        return redirect("extraconfig")
-
+    username = request.session["login"]["username"]
+    onosServerRecords = OnosServerManagement.objects.filter(usercreated=username)
+    if onosServerRecords is not None:
+        onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+        try:
+            dict(
+                requests.get(
+                    onosconfig["api_url"] + "devices",
+                    auth=HTTPBasicAuth(onosconfig["onos_user"], onosconfig["onos_pwd"]),
+                ).json()
+            )
+            if pwdcheck and not onosServerRecord.primaryip == onosip:
+                onosServerRecord.multipleconfigjson.append(json.dumps(onosconfig))
+                onosServerRecord.save()
+                return redirect("extraconfig")
+            elif pwdcheck and onosServerRecord.primaryip == onosip:
+                messages.error(request, "Config already added for this ip address")
+                return redirect("configcontroller")
+            else:
+                messages.error(request, "Password and confirmed passwords do not match")
+                return redirect("configcontroller")
+        except Exception:
+            messages.error(
+                request, "Wrong Input Credentials or ONOS not configured at this ip address"
+            )
+            return redirect("configcontroller")
     else:
-        messages.error(request, "Password and confirmed passwords do not match")
-        return redirect("configcontroller")
+        try:
+            dict(
+                requests.get(
+                    onosconfig["api_url"] + "devices",
+                    auth=HTTPBasicAuth(onosconfig["onos_user"], onosconfig["onos_pwd"]),
+                ).json()
+            )
+            if pwdcheck:
+                onosServerRecord = OnosServerManagement.objects.create(
+                    primaryip=onosip,
+                    usercreated=username,
+                    multipleconfigjson=json.dumps([onosconfig]),
+                )
+                onosServerRecord.save()
+                return redirect("extraconfig")
+            else:
+                messages.error(request, "Password and confirmed passwords do not match")
+                return redirect("configcontroller")
+        except Exception:
+            messages.error(
+                request, "Wrong Input Credentials or ONOS not configured at this ip address"
+            )
+            return redirect("configcontroller")
 
 
 def addextraconfig(request):
@@ -87,16 +95,24 @@ def addconfigpassword(request):
     """
     View for adding password configuration
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
 
     if request.method == "GET":
         return render(request, "sdntool/addconfigpassword.html", {"ip": iplist})
     ip = request.POST.get("ip")
 
     try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        primaryip = str(record.primaryip)
+        if primaryip == ip:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP is given as input")
         return redirect("addconfigpasswordcontroller")
@@ -105,13 +121,13 @@ def addconfigpassword(request):
     algorithm = request.POST.get("algo")
     host = str(ip)
     port = 22
-    username = request.POST.get("sshuser")
+    sshuser = request.POST.get("sshuser")
     password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
@@ -148,8 +164,6 @@ def addconfigpassword(request):
     except:
         messages.error(request, "Unable to connect with the given IP")
         return redirect("addconfigpasswordcontroller")
-    with open("username.txt") as file:
-        username = file.read()
 
     sec_log_call(f"{username} configured password")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} configured password")
@@ -166,8 +180,12 @@ def modifypassword(request):
     """
     View for modifying password configuration
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
     if request.method == "GET":
         return render(request, "sdntool/modifypassword.html", {"ip": iplist})
     status = request.POST.get("status")
@@ -175,21 +193,25 @@ def modifypassword(request):
     ip = request.POST.get("ip")
 
     try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        primaryip = str(record.primaryip)
+        if primaryip == ip:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP is given as input")
         return redirect("modifypassword")
 
     host = str(ip)
     port = 22
-    username = request.POST.get("sshuser")
+    sshuser = request.POST.get("sshuser")
     password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
@@ -226,8 +248,6 @@ def modifypassword(request):
     except:
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifypassword")
-    with open("username.txt") as file:
-        username = file.read()
 
     sec_log_call(f"{username} modified password configuration")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} modified password configuration")
@@ -241,8 +261,12 @@ def modifypassword(request):
 
 
 def disablepassword(request):
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
     return render(request, "sdntool/disablepassword.html", {"ip": iplist})
 
 
@@ -250,28 +274,36 @@ def disablepasswordconfirm(request):
     """
     Controller for disabling password configuration
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
     if request.method == "GET":
         return render(request, "sdntool/disablepassword.html", {"ip": iplist})
     ip = request.POST.get("ip")
 
     try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
+        record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+        primaryip = str(record.primaryip)
+        if primaryip == ip:
+            pass
+        else:
+            raise Exception
     except:
         messages.error(request, "No IP is given as input")
         return redirect("modifypassword")
 
     host = str(ip)
     port = 22
-    username = request.POST.get("sshuser")
+    sshuser = request.POST.get("sshuser")
     password = request.POST.get("sshpass")
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
+        ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
@@ -299,8 +331,6 @@ def disablepasswordconfirm(request):
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifypassword")
     messages.error(request, "Password encryption disabled")
-    with open("username.txt") as file:
-        username = file.read()
     log_call(f"{username} disabled ONOS password configuration")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} disabled ONOS password configuration")
 
@@ -316,8 +346,8 @@ def viewpasswordconfiguration(request):
     """
 
     global ipconfiglist
-    with open("userip.txt", "r") as file:
-        ip = file.read()
+    record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+    ip = str(record.primaryip)
 
     host = str(ip)
     port = 8101
@@ -374,8 +404,7 @@ def viewpasswordconfiguration(request):
     for i in newipconfiglist:
         if i not in ipstatuslist:
             ipstatuslist.append(i)
-    with open("username.txt") as file:
-        username = file.read()
+    username = request.session["login"]["username"]
 
     sec_log_call(f"{username} viewed ONOS password Configuration")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed ONOS password Configuration")

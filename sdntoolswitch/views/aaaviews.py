@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from requests.auth import HTTPBasicAuth
 from sdntoolswitch.activitylogs import *
+from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
@@ -15,21 +16,17 @@ def aaa(request):
     """
     View for AAA page
     """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
+    username = request.session["login"]["username"]
+    onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
+    try:
+        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+    except:
+        iplist = []
 
     if request.method == "GET":
         return render(request, "sdntool/aaaip.html", {"ip": iplist})
 
     ip = request.POST.get("ip")
-
-    try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
-    except:
-        messages.error(request, "No IP is given as input")
-        return redirect("home")
-
     return render(request, "sdntool/configureradius.html", {"ip": ip})
 
 
@@ -63,12 +60,12 @@ def aaacontroller(request):
     }
     aaaconfigjson = json.dumps(aaaconfig)
     headers = {"Content-Type": "application/json"}
-    global onos_username
-    global onos_password
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == ip][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     requests.post(
         url=url,
         data=aaaconfigjson,
@@ -76,8 +73,6 @@ def aaacontroller(request):
         auth=HTTPBasicAuth(onos_username, onos_password),
     )
 
-    with open("username.txt") as file:
-        username = file.read()
 
     aaalog_call(f"{username} configured AAA")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} configured AAA")
@@ -89,15 +84,14 @@ def viewradius(request):
     """
     View for viewing radius server
     """
-    with open("userip.txt", "r") as file:
-        ip = file.read()
-    host = str(ip)
-    global onos_username
-    global onos_password
-    with open("config.json", "r") as file:
-        config = json.load(file)
-        onos_username = config["onos_user"]
-        onos_password = config["onos_pwd"]
+    record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
+    host = str(record.primaryip)
+    username = request.session["login"]["username"]
+    record = OnosServerManagement.objects.get(usercreated=username)
+    configarr = json.loads(record.multipleconfigjson)
+    config = [i for i in configarr if i["ip"] == host][0]
+    onos_username = config["onos_user"]
+    onos_password = config["onos_pwd"]
     response = requests.get(
         f"http://{host}:8181/onos/v1/network/configuration",
         auth=HTTPBasicAuth(onos_username, onos_password),
@@ -105,8 +99,6 @@ def viewradius(request):
     config = json.loads(response)  ####### reading the json file
 
     radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
-    with open("username.txt") as file:
-        username = file.read()
     aaalog_call(f"{username} viewed AAA")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed AAA")
     return render(request, "sdntool/viewradius.html", {"radius": radiusip})
