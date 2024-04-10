@@ -150,7 +150,7 @@
 
                                         <a href="{% url 'modifytls' %}" class="nav-link">
                                             <span class="menu-collapsed"><i class="fas fa-server"
-                                                    style="margin-right: 13px"></i>Enable TLS</span>
+                                                    style="margin-right: 13px"></i>Modify TLS</span>
                                         </a>
                                         <a href="{% url 'disabletls' %}" class="nav-link">
                                             <span class="menu-collapsed"><i class="fas fa-server"
@@ -179,7 +179,7 @@
 
                                         <a href="{% url 'modifyhttp' %}" class="nav-link">
                                             <span class="menu-collapsed"><i class="fas fa-server"
-                                                    style="margin-right: 13px"></i>Enable HTTPS</span>
+                                                    style="margin-right: 13px"></i>Modify HTTPS</span>
                                         </a>
                                         <a href="{% url 'disablehttp' %}" class="nav-link">
                                             <span class="menu-collapsed"><i class="fas fa-server"
@@ -244,10 +244,6 @@
                                     <span class="menu-collapsed"><i class="fas fa-server"
                                             style="margin-right: 13px"></i>Configure NTP</span>
                                 </a>
-                                <a href="{% url 'configntp' %}" class="nav-link">
-                                    <span class="menu-collapsed"><i class="fas fa-server"
-                                            style="margin-right: 13px"></i>Modify configuration</span>
-                                </a>
                                 {% endif %}
                                 <a href="{% url 'ntp' %}" class="nav-link">
                                     <span class="menu-collapsed"><i class="fas fa-server"
@@ -263,7 +259,7 @@
                             ONOS Security Log Management
                         </a>
 
-                        <a class="nav-link" href="{% url 'Log' %}" style="background-color:turquoise;"
+                        <a class="nav-link" href="{% url 'logmanagement' %}" style="background-color:turquoise;"
                             aria-expanded="false">
                             <i class="fas fa-clipboard" style="margin-right: 13px"></i>
                             SDS Log Management

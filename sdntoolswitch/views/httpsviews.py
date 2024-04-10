@@ -11,95 +11,6 @@ from sdntoolswitch.aaalogs import *
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
-def confighttp(request):
-    """
-    View for configuring HTTPS
-    """
-    with open("iplist.txt", "r") as file:
-        iplist = file.readlines()
-    if request.method == "GET":
-        return render(request, "sdntool/confighttp.html", {"ip": iplist})
-    status = request.POST.get("status")
-    keyloc = request.POST.get("key")
-    httppassword = request.POST.get("password")
-    cnfpassword = request.POST.get("cnfpassword")
-    ip = request.POST.get("ip")
-    try:
-        with open("userip.txt", "w") as file:
-            file.write(ip)
-    except:
-        messages.error(request, "No IP is given as input")
-        return redirect("confighttp")
-
-    host = str(ip)
-    port = 22
-    username = request.POST.get("sshuser")
-    password = request.POST.get("sshpass")
-    # Establish SSH connection
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    try:
-        ssh.connect(hostname=host, port=port, username=username, password=password)
-    except:
-        messages.error(request, "Unable to connect remotely")
-        return redirect("home")
-    # Create SFTP client
-    sftp = ssh.open_sftp()
-
-    try:
-        onos_location = request.POST.get("fileloc")
-        karaf_ver = request.POST.get("karaf")
-        with sftp.open(
-            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg",
-            "r",
-        ) as file:
-            data = file.readlines()  ###### reading all lines
-        for i in range(len(data)):
-            if data[i].startswith("org.ops4j.pax.web.ssl.keystore"):
-                data[i] = "org.ops4j.pax.web.ssl.keystore=" + keyloc + "\n"
-            elif data[i].startswith("org.ops4j.pax.web.ssl.password"):
-                data[i] = "org.ops4j.pax.web.ssl.password=" + httppassword + "\n"
-            elif data[i].startswith("org.ops4j.pax.web.ssl.keypassword"):
-                data[i] = "org.ops4j.pax.web.ssl.keypassword=" + cnfpassword + "\n"
-            elif data[i].startswith("org.osgi.service.http.secure.enabled"):
-                if status == "true":
-                    data[i] = 'org.osgi.service.http.secure.enabled="+true+"\n'
-                    messages.success(request, "Action Enabled")
-                else:
-                    data[i] = "org.osgi.service.http.secure.enabled=false\n"
-                    messages.error(request, "Action Disabled")
-
-        with open(
-            f"{onos_location}/apache-karaf-{karaf_ver}/etc/org.ops4j.pax.web.cfg",
-            "w",
-        ) as file:
-            file.writelines(data)
-
-        sftp.close()
-        ssh.close()
-    except:
-        messages.error(request, "Unable to connect with given IP")
-        return redirect("confighttp")
-
-    messages.info(request, "HTTPS Authentication Configured")
-
-    if httppassword == cnfpassword:
-        with open("username.txt") as file:
-            username = file.read()
-
-        sec_log_call(f"{username} configured HTTPS")
-        syslog.syslog(syslog.LOG_DEBUG, f"{username} configured HTTPS")
-
-        with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-            if os.stat("onossec.log").st_size != 0:
-                lastline = firstfile.readlines()[-1].strip()
-                secondfile.write(lastline + "\n")
-                syslog.syslog(syslog.LOG_INFO, lastline)
-        return redirect("viewhttp")
-    else:
-        messages.error(request, "Password and confirmed passwords do not match")
-        return redirect("confighttp")
-
 
 def modifyhttp(request):
     """
@@ -157,7 +68,7 @@ def modifyhttp(request):
                 org.osgi.service.http.port=8181
                 org.osgi.service.http.port.secure=8443
                 org.osgi.service.http.enabled=true
-                org.osgi.service.http.secure.enabled=true
+                org.osgi.service.http.secure.enabled={}
                 org.ops4j.pax.web.ssl.keystore={}
                 org.ops4j.pax.web.ssl.password={}
                 org.ops4j.pax.web.ssl.keypassword={}
@@ -165,7 +76,7 @@ def modifyhttp(request):
                 org.ops4j.pax.web.session.url=none
                 org.ops4j.pax.web.config.file=./etc/jetty.xml
                 """.format(
-            keyloc, httppassword, cnfpassword
+            status, keyloc, httppassword, cnfpassword
         )
 
         # print(datatowrite)
