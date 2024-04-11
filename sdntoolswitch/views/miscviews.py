@@ -1,20 +1,19 @@
 import json
 import os
-import syslog
 import time
 import paramiko
 import requests
+import logging
 from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement, NtpConfigRecords
 from sdntoolswitch.login_validator import login_check
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
+from sdntoolswitch.generic_logger import logger_call, create_logger
 
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
+logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
+
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -47,6 +46,7 @@ def configntp(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("home")
 
@@ -77,6 +77,7 @@ def configntp(request):
         ssh_transp.close()
     except Exception as e:
         print(e)
+        logger.warn(f"Unable to connect remotely, {e.__str__()}")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     print(outdata, errdata)
@@ -95,8 +96,7 @@ def configntp(request):
             ntpserver=server, ip=ip, usercreated=username, output=outdata.decode("utf-8")
         )
         data.save()
-    sec_log_call(f"{username} configured NTP on {ip} with {server}")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} configured NTP on {ip} with {server}")
+    logger.info(f"{username} configured NTP on {ip} with {server}")
 
     messages.info(request, f"IP:{ip} Configured with NTP server")
     return render(request, "sdntool/ntp.html")
@@ -197,5 +197,6 @@ def ntp(request):
             data = [{"server": i[0], "ip": i[1], "output": i[3]} for i in data]
     except Exception:
         data = []
+    logger_call(logging.INFO, f"{username} monitored NTP details", file_name="sds.log")
     return render(request, "sdntool/ntp.html", {"data": data})
 

@@ -1,21 +1,19 @@
 import json
 import os
 import re
-import syslog
 import paramiko
 import requests
+import logging
 from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.activitylogs import *
 from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.models import OnosServerManagement
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
 from sdntoolswitch.utils import *
+from sdntoolswitch.generic_logger import logger_call, create_logger
 
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
+logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -60,10 +58,11 @@ def addconfig(request):
                 messages.error(request, "Config already added for this ip address")
                 return redirect("configcontroller")
             else:
+                logger.warn("Password and confirmed passwords do not match")
                 messages.error(request, "Password and confirmed passwords do not match")
                 return redirect("configcontroller")
         except Exception as e:
-            print(e.__str__())
+            logger.warn(e.__str__())
             messages.error(
                 request, "Wrong Input Credentials or ONOS not configured at this ip address"
             )
@@ -85,10 +84,11 @@ def addconfig(request):
                 onosServerRecord.save()
                 return redirect("extraconfig")
             else:
+                logger.warn("Password and confirmed passwords do not match")
                 messages.error(request, "Password and confirmed passwords do not match")
                 return redirect("configcontroller")
         except Exception as e:
-            print(e.__str__())
+            logger.warn(e.__str__())
             messages.error(
                 request, "Wrong Input Credentials or ONOS not configured at this ip address"
             )
@@ -124,6 +124,7 @@ def addconfigpassword(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("addconfigpasswordcontroller")
 
@@ -139,6 +140,7 @@ def addconfigpassword(request):
     try:
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     # Create SFTP client
@@ -172,16 +174,12 @@ def addconfigpassword(request):
         sftp.close()
         ssh.close()
     except:
+        logger.warn("Unable to connect with given IP")
         messages.error(request, "Unable to connect with the given IP")
         return redirect("addconfigpasswordcontroller")
-
-    sec_log_call(f"{username} configured password")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} configured password")
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    msg = f"{username} configured password"
+    logger.info(msg)
+    logger_call(logging.INFO, msg, file_name="sds.log")
     messages.info(request, "ONOS Password Configured")
     return redirect("viewconfigurationpassword")
 
@@ -211,6 +209,7 @@ def modifypassword(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("modifypassword")
 
@@ -224,6 +223,7 @@ def modifypassword(request):
     try:
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     # Create SFTP client
@@ -257,16 +257,12 @@ def modifypassword(request):
         sftp.close()
         ssh.close()
     except:
+        logger.warn("Unable to connect with given IP")
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifypassword")
-
-    sec_log_call(f"{username} modified password configuration")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} modified password configuration")
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    msg = f"{username} modified password configuration"
+    logger.info(msg)
+    logger_call(logging.INFO, msg, file_name="sds.log")
     messages.info(request, "ONOS Password configuration modified")
     return redirect("viewconfigurationpassword")
 
@@ -305,6 +301,7 @@ def disablepasswordconfirm(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("modifypassword")
 
@@ -318,6 +315,7 @@ def disablepasswordconfirm(request):
     try:
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     # Create SFTP client
@@ -344,9 +342,8 @@ def disablepasswordconfirm(request):
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifypassword")
     messages.error(request, "Password encryption disabled")
-    log_call(f"{username} disabled ONOS password configuration")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} disabled ONOS password configuration")
-
+    msg = f"{username} disabled password configuration"
+    logger_call(logging.INFO, msg, file_name="sds.log")
     return redirect("viewconfigurationpassword")
 
 
@@ -399,6 +396,7 @@ def viewpasswordconfiguration(request):
                 password = match.group(2)
                 break
     except:
+        logger.warn("Error occurred while connecting to the remote server")
         messages.error(request, "Error occurred while connecting to the remote server")
         return redirect("home")
 
@@ -419,14 +417,9 @@ def viewpasswordconfiguration(request):
         if i not in ipstatuslist:
             ipstatuslist.append(i)
     username = request.session["login"]["username"]
-
-    sec_log_call(f"{username} viewed ONOS password Configuration")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed ONOS password Configuration")
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    msg = f"{username} viewed ONOS password Configuration"
+    logger.info(msg)
+    logger_call(logging.INFO, msg, file_name="sds.log")
     return render(
         request,
         "sdntool/viewpasswordconfiguration.html",

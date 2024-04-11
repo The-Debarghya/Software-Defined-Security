@@ -1,5 +1,5 @@
 import json
-import syslog
+import logging
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
@@ -7,11 +7,8 @@ from django.views.decorators.cache import cache_control
 from sdntoolswitch.models import OnosServerManagement, Usermanagement, NtpConfigRecords
 from sdntoolswitch.formvalidation import Validator
 from sdntoolswitch.login_validator import login_check
-from sdntoolswitch.activitylogs import *
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
+from sdntoolswitch.generic_logger import logger_call
 
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
 def login(request):
     """
@@ -52,8 +49,10 @@ def logincontroller(request):
                     "userrole": user.userrole,
                 }
                 if request.session["login"]["username"] != "operator":
+                    logger_call(logging.INFO, f"{username} logged in", file_name="sds.log")
                     return redirect("configcontroller")
                 else:
+                    logger_call(logging.INFO, f"{username} logged in", file_name="sds.log")
                     return redirect("home")
 
             else:
@@ -77,8 +76,7 @@ def logout(request):
     NtpConfigRecords.objects.filter(usercreated=username).delete()
     with open("portconf.json", "w") as file:
         file.truncate()
-    log_call(f"{username} logged out")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} logged out")
+    logger_call(logging.INFO, f"{username} logged out", file_name="sds.log")
     return redirect("login")
 
 
@@ -99,6 +97,4 @@ def home(request):
         iplist = []
 
     username = request.session["login"]["username"]
-    log_call(f"{username} logged in")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} logged in")
     return render(request, "sdntool/home.html", {"ip": iplist, "title": data["title"]})

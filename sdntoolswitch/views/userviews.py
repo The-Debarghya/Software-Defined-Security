@@ -1,14 +1,10 @@
-import syslog
+import logging
 from django.shortcuts import redirect, render
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import cache_control
 from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.models import Usermanagement, OnosServerManagement, NtpConfigRecords
-from sdntoolswitch.activitylogs import *
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
-
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
+from sdntoolswitch.generic_logger import logger_call
 
 def createuserform(request):
     """
@@ -27,15 +23,15 @@ def Createuser(request):
     global username
     user = request.POST.get("U_id")
     password = make_password(request.POST.get("P_id"))
-    type = request.POST.get("type")
+    role = request.POST.get("type")
     userdata = Usermanagement.objects.create(
-        username=user, password=password, userrole=type
+        username=user, password=password, userrole=role
     )
     userdata.save()
     username = request.session["login"]["username"]
 
-    log_call(f"{username} created new {type} user {user}")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} created new {type} user {user}")
+    msg = f"{username} created new {role} user {user}"
+    logger_call(logging.INFO, msg, file_name="sds.log")
     return redirect("showusers")
 
 @login_check
@@ -51,11 +47,8 @@ def deleteuser(request, id):
     username = request.session["login"]["username"]
     OnosServerManagement.objects.filter(usercreated=userdata.username).delete()
     NtpConfigRecords.objects.filter(usercreated=userdata.username).delete()
-    log_call(f"{username} deleted {userdata.userrole} user {userdata.username}")
-    syslog.syslog(
-        syslog.LOG_DEBUG,
-        f"{username} deleted {userdata.userrole} user {userdata.username}",
-    )
+    msg = f"{username} deleted {userdata.userrole} user {userdata.username}"
+    logger_call(logging.INFO, msg, file_name="sds.log")
 
     return redirect("showusers")
 
@@ -69,6 +62,6 @@ def users(request):
     userdata = Usermanagement.objects.filter(status="ACTIVE")
     username = request.session["login"]["username"]
 
-    log_call(f"{username} monitored user details")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} monitored user details")
+    msg = f"{username} monitored user details"
+    logger_call(logging.INFO, msg, file_name="sds.log")
     return render(request, "sdntool/showusers.html", {"userdata": userdata})

@@ -1,18 +1,16 @@
 import json
 import os
-import syslog
 import paramiko
+import logging
 
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
+from sdntoolswitch.generic_logger import logger_call, create_logger
 
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
+logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
 
 ipconfiglist = []
 
@@ -44,6 +42,7 @@ def modifytls(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("modifytls")
 
@@ -57,6 +56,7 @@ def modifytls(request):
     try:
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     # Create SFTP client
@@ -96,19 +96,14 @@ def modifytls(request):
         sftp.close()
         ssh.close()
     except:
+        logger.warn("Unable to connect with given IP")
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifytls")
 
     username = request.session["login"]["username"]
 
-    sec_log_call(f"{username} modified TLS")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} modified TLS")
-
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    logger_call(logging.INFO, f"{username} modified TLS", file_name="sds.log")
+    logger.info(f"{username} modified TLS")
 
     messages.success(request, "Action Enabled")
     messages.info(request, "TLS configuration modified")
@@ -143,6 +138,7 @@ def disabletlsconfirm(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("disabletlsconfirm")
 
@@ -156,6 +152,7 @@ def disabletlsconfirm(request):
     try:
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     # Create SFTP client
@@ -171,6 +168,7 @@ def disabletlsconfirm(request):
         sftp.close()
         ssh.close()
     except:
+        logger.warn("Unable to connect with given IP")
         messages.error(request, "Unable to connect with given IP")
         return redirect("disabletlsconfirm")
 
@@ -178,14 +176,8 @@ def disabletlsconfirm(request):
     messages.info(request, "TLS configured")
     username = request.session["login"]["username"]
 
-    sec_log_call(f"{username} disabled TLS")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} disabled TLS")
-
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    logger_call(logging.INFO, f"{username} disabled TLS", file_name="sds.log")
+    logger.info(f"{username} disabled TLS")
 
     return redirect("viewtls")
 
@@ -239,6 +231,7 @@ def viewtls(request):
                         status = "false"
                     break
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
 
@@ -266,13 +259,7 @@ def viewtls(request):
 
     username = request.session["login"]["username"]
 
-    sec_log_call(f"{username} viewed TLS configuration")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed TLS configuration")
-
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    logger_call(logging.INFO, f"{username} viewed TLS configuration", file_name="sds.log")
+    logger.info(f"{username} viewed TLS configuration")
 
     return render(request, "sdntool/viewtls.html", {"ipconfiglist": ipstatuslist})

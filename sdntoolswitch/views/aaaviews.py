@@ -1,18 +1,14 @@
 import json
+import logging
 import re
 import requests
-import syslog
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from requests.auth import HTTPBasicAuth
-from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
-
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
+from sdntoolswitch.generic_logger import logger_call
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -78,9 +74,8 @@ def aaacontroller(request):
         auth=HTTPBasicAuth(onos_username, onos_password),
     )
 
-
-    aaalog_call(f"{username} configured AAA")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} configured AAA")
+    msg = f"{username} configured AAA"
+    logger_call(logging.INFO, msg, file_name="sds.log")
     messages.info(request, "AAA configured")
     return redirect("viewradius")
 
@@ -107,8 +102,8 @@ def viewradius(request):
         radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
     except Exception as e:
         radiusip = ""
-        print(e.__str__())
+        logger_call(logging.ERROR, f"Error in viewing radius: {e.__str__()}", file_name="aaa.log")
 
-    aaalog_call(f"{username} viewed AAA")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed AAA")
+    msg = f"{username} viewed AAA"
+    logger_call(logging.INFO, msg, file_name="sds.log")
     return render(request, "sdntool/viewradius.html", {"radius": radiusip})

@@ -1,19 +1,16 @@
 import json
-import os
 import re
 import paramiko
 import requests
-import syslog
+import logging
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
-from sdntoolswitch.onosseclogs import *
-from sdntoolswitch.aaalogs import *
+from sdntoolswitch.generic_logger import logger_call, create_logger
 
-syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
+logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -46,6 +43,7 @@ def modifyhttp(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("modifyhttp")
 
@@ -57,6 +55,7 @@ def modifyhttp(request):
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
 
     except paramiko.AuthenticationException:
+        logger.warn("Authentication failed, please verify your credentials")
         messages.error(
             request,
             "Authentication failed, please verify your credentials: %s"
@@ -64,13 +63,14 @@ def modifyhttp(request):
         )
         return redirect("home")
     except paramiko.BadHostKeyException as badHostKeyException:
+        logger.warn("Unable to verify server's host key")
         messages.error(
             request, "Unable to verify server's host key: %s" % badHostKeyException
         )
         return redirect("home")
 
     except paramiko.SSHException as sshException:
-        # print("Unable to establish SSH connection: %s" % sshException)
+        logger.warn("Unable to establish SSH connection")
         messages.error(request, "Unable to establish SSH connection: %s" % sshException)
         return redirect("home")
 
@@ -101,23 +101,15 @@ def modifyhttp(request):
         sftp.close()
         ssh.close()
     except Exception as e:
-        print(e)
+        logger.warn(f"Unable to connect with given IP, {e.__str__()}")
         messages.error(request, "Unable to connect with given IP")
         return redirect("modifyhttp")
 
     if httppassword == cnfpassword:
         username = request.session["login"]["username"]
-
-        sec_log_call(f"{username} modified HTTPS")
-
-        syslog.syslog(syslog.LOG_DEBUG, f"{username} modified HTTPS")
-
-        with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-            if os.stat("onossec.log").st_size != 0:
-
-                lastline = firstfile.readlines()[-1].strip()
-                secondfile.write(lastline + "\n")
-                syslog.syslog(syslog.LOG_INFO, lastline)
+        msg = f"{username} modified HTTPS"
+        logger_call(logging.INFO, msg, file_name="sds.log")
+        logger.info(msg)
 
         messages.info(request, "HTTPS configuration modified")
         return redirect("viewhttp")
@@ -158,6 +150,7 @@ def disablehttpconfirm(request):
         else:
             raise Exception
     except:
+        logger.warn("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("httpdisableconfirm")
 
@@ -171,6 +164,7 @@ def disablehttpconfirm(request):
     try:
         ssh.connect(hostname=host, port=port, username=sshuser, password=password)
     except:
+        logger.warn("Unable to connect remotely")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     # Create SFTP client
@@ -197,18 +191,14 @@ def disablehttpconfirm(request):
         sftp.close()
         ssh.close()
     except:
+        logger.warn("Unable to connect with given IP")
         messages.error(request, "Unable to connect with given IP")
         return redirect("httpdisableconfirm")
     username = request.session["login"]["username"]
 
-    sec_log_call(f"{username} disabled HTTPS")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} disabled HTTPS")
-
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    msg = f"{username} disabled HTTPS"
+    logger_call(logging.INFO, msg, file_name="sds.log")
+    logger.info(msg)
     messages.error(request, "HTTPS disabled")
     return redirect("viewhttp")
 
@@ -231,7 +221,7 @@ def viewhttp(request):
     except ConnectionRefusedError:
         status = False
     except Exception as e:
-        print(e.__str__())
+        logger.warn(f"Unable to connect with given IP, {e.__str__()}")
         status = False
     if status is True:
         ipconfiglist.append({"ip": ip, "status": "enabled", "name": "HTTPS"})
@@ -255,12 +245,7 @@ def viewhttp(request):
             ipstatuslist.append(i)
     username = request.session["login"]["username"]
 
-    sec_log_call(f"{username} viewed HTTPS configuration")
-    syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed HTTPS configuration")
-
-    with open("onossec.log", "r") as firstfile, open("sds.log", "a") as secondfile:
-        if os.stat("onossec.log").st_size != 0:
-            lastline = firstfile.readlines()[-1].strip()
-            secondfile.write(lastline + "\n")
-            syslog.syslog(syslog.LOG_INFO, lastline)
+    msg = f"{username} viewed HTTPS configuration"
+    logger_call(logging.INFO, msg, file_name="sds.log")
+    logger.info(msg)
     return render(request, "sdntool/viewhttp.html", {"ipconfiglist": ipstatuslist})
