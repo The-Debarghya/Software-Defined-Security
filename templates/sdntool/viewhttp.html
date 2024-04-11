@@ -40,8 +40,6 @@
 
   {% if request.session.login.userrole != 'operator' %}
   <div class="text-center mt-4">
-    <a href="{% url 'confighttp' %}" class="btn btn btn-lg active" role="button" style="background-color:lightgreen"
-      aria-pressed="true">Configure HTTPS</a>
     <a href="{% url 'modifyhttp' %}" class="btn btn btn-lg active" role="button" style="background-color:lightgreen"
       aria-pressed="true">Modify HTTPS</a>
     <a href="{% url 'disablehttp' %}" class="btn btn btn-lg active" role="button" style="background-color:red"

@@ -5,8 +5,10 @@ import paramiko
 
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.views.decorators.cache import cache_control
 from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
+from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
@@ -14,6 +16,8 @@ syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
 ipconfiglist = []
 
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def modifytls(request):
     """
     View for modifying TLS
@@ -110,11 +114,13 @@ def modifytls(request):
     messages.info(request, "TLS configuration modified")
     return redirect("viewtls")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disabletls(request):
     return render(request, "sdntool/disabletls.html")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disabletlsconfirm(request):
     """
     Controller for disabling TLS
@@ -183,7 +189,8 @@ def disabletlsconfirm(request):
 
     return redirect("viewtls")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def viewtls(request):
     """
     View for viewing TLS configuration
@@ -196,6 +203,7 @@ def viewtls(request):
     port = 8101
     username = "karaf"
     password = "karaf"
+    status = "false"
     # Establish SSH connection
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

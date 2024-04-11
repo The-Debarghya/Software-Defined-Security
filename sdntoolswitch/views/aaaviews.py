@@ -4,14 +4,18 @@ import requests
 import syslog
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.views.decorators.cache import cache_control
 from requests.auth import HTTPBasicAuth
 from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
+from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def aaa(request):
     """
     View for AAA page
@@ -29,7 +33,8 @@ def aaa(request):
     ip = request.POST.get("ip")
     return render(request, "sdntool/configureradius.html", {"ip": ip})
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def aaacontroller(request):
     """
     Controller for AAA page
@@ -79,7 +84,8 @@ def aaacontroller(request):
     messages.info(request, "AAA configured")
     return redirect("viewradius")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def viewradius(request):
     """
     View for viewing radius server
@@ -92,13 +98,17 @@ def viewradius(request):
     config = [i for i in configarr if i["ip"] == host][0]
     onos_username = config["onos_user"]
     onos_password = config["onos_pwd"]
-    response = requests.get(
-        f"http://{host}:8181/onos/v1/network/configuration",
-        auth=HTTPBasicAuth(onos_username, onos_password),
-    )
-    config = json.loads(response)  ####### reading the json file
+    try:
+        response = requests.get(
+            f"http://{host}:8181/onos/v1/network/configuration",
+            auth=HTTPBasicAuth(onos_username, onos_password),
+        )
+        config = response.json()  ####### reading the json file
+        radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
+    except Exception as e:
+        radiusip = ""
+        print(e.__str__())
 
-    radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
     aaalog_call(f"{username} viewed AAA")
     syslog.syslog(syslog.LOG_DEBUG, f"{username} viewed AAA")
     return render(request, "sdntool/viewradius.html", {"radius": radiusip})

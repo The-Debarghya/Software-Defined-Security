@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.models import OnosServerManagement, Usermanagement
+from sdntoolswitch.models import OnosServerManagement, Usermanagement, NtpConfigRecords
 from sdntoolswitch.formvalidation import Validator
 from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.activitylogs import *
@@ -74,6 +74,7 @@ def logout(request):
     username = request.session["login"]["username"]
     del request.session["login"]
     OnosServerManagement.objects.filter(usercreated=username).delete()
+    NtpConfigRecords.objects.filter(usercreated=username).delete()
     with open("portconf.json", "w") as file:
         file.truncate()
     log_call(f"{username} logged out")

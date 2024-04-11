@@ -6,14 +6,17 @@ import requests
 import syslog
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.views.decorators.cache import cache_control
 from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
+from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def modifyhttp(request):
     """
     View for modifying HTTPS
@@ -122,7 +125,8 @@ def modifyhttp(request):
         messages.error(request, "Password and confirmed passwords do not match")
         return redirect("modifyhttp")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablehttp(request):
     """
     View for disabling HTTPS
@@ -130,7 +134,8 @@ def disablehttp(request):
     if request.method == "GET":
         return render(request, "sdntool/disablehttp.html")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablehttpconfirm(request):
     """
     Controller for disabling HTTPS
@@ -207,12 +212,14 @@ def disablehttpconfirm(request):
     messages.error(request, "HTTPS disabled")
     return redirect("viewhttp")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def viewhttp(request):
     """
     View for viewing HTTPS configuration
     """
     global ipconfiglist
+    ipconfiglist = []
 
     record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
     ip = str(record.primaryip)
@@ -223,7 +230,8 @@ def viewhttp(request):
         status = True
     except ConnectionRefusedError:
         status = False
-    except:
+    except Exception as e:
+        print(e.__str__())
         status = False
     if status is True:
         ipconfiglist.append({"ip": ip, "status": "enabled", "name": "HTTPS"})

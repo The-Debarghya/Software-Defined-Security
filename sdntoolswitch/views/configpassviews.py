@@ -7,7 +7,9 @@ import requests
 from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.views.decorators.cache import cache_control
 from sdntoolswitch.activitylogs import *
+from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
@@ -15,6 +17,8 @@ from sdntoolswitch.utils import *
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addconfig(request):
     if request.method == "GET":
         return render(request, "sdntool/addconfig.html")
@@ -36,8 +40,8 @@ def addconfig(request):
         "ip": str(onosip),
     }
     username = request.session["login"]["username"]
-    onosServerRecords = OnosServerManagement.objects.filter(usercreated=username)
-    if onosServerRecords is not None:
+    onosServerRecords = OnosServerManagement.objects.values_list("primaryip", flat=True)
+    if len(onosServerRecords) != 0:
         onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
         try:
             dict(
@@ -47,7 +51,9 @@ def addconfig(request):
                 ).json()
             )
             if pwdcheck and not onosServerRecord.primaryip == onosip:
-                onosServerRecord.multipleconfigjson.append(json.dumps(onosconfig))
+                prevconfig = json.loads(onosServerRecord.multipleconfigjson)
+                prevconfig.append(onosconfig)
+                onosServerRecord.multipleconfigjson = json.dumps(prevconfig)
                 onosServerRecord.save()
                 return redirect("extraconfig")
             elif pwdcheck and onosServerRecord.primaryip == onosip:
@@ -56,7 +62,8 @@ def addconfig(request):
             else:
                 messages.error(request, "Password and confirmed passwords do not match")
                 return redirect("configcontroller")
-        except Exception:
+        except Exception as e:
+            print(e.__str__())
             messages.error(
                 request, "Wrong Input Credentials or ONOS not configured at this ip address"
             )
@@ -80,17 +87,20 @@ def addconfig(request):
             else:
                 messages.error(request, "Password and confirmed passwords do not match")
                 return redirect("configcontroller")
-        except Exception:
+        except Exception as e:
+            print(e.__str__())
             messages.error(
                 request, "Wrong Input Credentials or ONOS not configured at this ip address"
             )
             return redirect("configcontroller")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addextraconfig(request):
     return render(request, "sdntool/extraconfig.html")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addconfigpassword(request):
     """
     View for adding password configuration
@@ -175,7 +185,8 @@ def addconfigpassword(request):
     messages.info(request, "ONOS Password Configured")
     return redirect("viewconfigurationpassword")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def modifypassword(request):
     """
     View for modifying password configuration
@@ -259,7 +270,8 @@ def modifypassword(request):
     messages.info(request, "ONOS Password configuration modified")
     return redirect("viewconfigurationpassword")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablepassword(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
@@ -269,7 +281,8 @@ def disablepassword(request):
         iplist = []
     return render(request, "sdntool/disablepassword.html", {"ip": iplist})
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablepasswordconfirm(request):
     """
     Controller for disabling password configuration
@@ -339,7 +352,8 @@ def disablepasswordconfirm(request):
 
 ipconfiglist = list()
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def viewpasswordconfiguration(request):
     """
     View for viewing password configuration

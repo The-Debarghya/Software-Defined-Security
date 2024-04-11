@@ -7,17 +7,22 @@ import requests
 from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.views.decorators.cache import cache_control
 from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement, NtpConfigRecords
+from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablentp(request):
     return render(request, "sdntool/disablentp.html")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def configntp(request):
     """
     Adding NTP server to the list of NTP servers
@@ -96,7 +101,8 @@ def configntp(request):
     messages.info(request, f"IP:{ip} Configured with NTP server")
     return render(request, "sdntool/ntp.html")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def ddos(request):
     """
     View for DDOS attack detection
@@ -175,7 +181,8 @@ def ddos(request):
         {"portfaultresponse": portfaultresponse, "portfaultcounter": portfaultcounter},
     )
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def ntp(request):
     """
     View for NTP configuration

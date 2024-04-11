@@ -5,13 +5,17 @@ import requests
 from requests.auth import HTTPBasicAuth
 from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.views.decorators.cache import cache_control
 from sdntoolswitch.activitylogs import *
 from sdntoolswitch.models import OnosServerManagement
+from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.onosseclogs import *
 from sdntoolswitch.aaalogs import *
 
 syslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_USER)
 
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addfire(request):
     """
     View for adding firewall rules
@@ -58,7 +62,8 @@ def addfire(request):
         request, "sdntool/addfire.html", {"deviceresponse": deviceresponse, "ip": ip}
     )
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addfirecontroller(request):
     """
     Controller for adding firewall rule
@@ -92,7 +97,8 @@ def addfirecontroller(request):
 
     return redirect("viewrules")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbyport(request):
     """
     View for adding firewall rules by port
@@ -142,7 +148,8 @@ def addrulesbyport(request):
         {"deviceresponse": deviceresponse, "ip": ip},
     )
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbyportcontroller(request):
     """
     Controller for adding firewall rules by port
@@ -187,7 +194,8 @@ def addrulesbyportcontroller(request):
 
     return redirect("viewrules")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def viewrules(request):
     """
     Viewing firewall rules
@@ -223,7 +231,8 @@ def viewrules(request):
         request, "sdntool/viewrules.html", {"firewallresponse": firewallresponse}
     )
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deleterules(request, id):
     """
     Deleting firewall rule by id
@@ -243,13 +252,16 @@ def deleterules(request, id):
 
     return redirect("viewrules")
 
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addscrulesip(request):
     """
     View for adding firewall rules by source and destination
     """
     return render(request, "sdntool/addscrulesip.html")
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbysrc(request):
     """
     View for adding firewall rules by source
@@ -294,7 +306,8 @@ def addrulesbysrc(request):
         request, "sdntool/addrulesbysrc.html", {"ip": ip, "hostresponse": hostresponse}
     )
 
-
+@login_check
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbysrccontroller(request):
     """
     Controller for adding firewall rules by source

@@ -17,7 +17,7 @@ class Usermanagement(models.Model):
 class OnosServerManagement(models.Model):
     idonosservermanagement = models.BigAutoField(primary_key=True)
     primaryip = models.CharField(max_length=200)
-    usercreated = models.ForeignKey(Usermanagement, on_delete=models.CASCADE)
+    usercreated = models.CharField(max_length=200)
     multipleconfigjson = models.TextField()
 
     class Meta:
@@ -26,7 +26,7 @@ class OnosServerManagement(models.Model):
 class NtpConfigRecords(models.Model):
     ntpserver = models.CharField(max_length=200)
     ip = models.CharField(max_length=200)
-    usercreated = models.ForeignKey(Usermanagement, on_delete=models.CASCADE)
+    usercreated = models.CharField(max_length=200)
     output = models.TextField()
 
     class Meta:
