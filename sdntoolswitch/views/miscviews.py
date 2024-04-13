@@ -12,13 +12,8 @@ from sdntoolswitch.models import OnosServerManagement, NtpConfigRecords
 from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.generic_logger import logger_call, create_logger
 
-logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
+logger = create_logger(__package__.rsplit(".", 1)[-1], log_level=logging.WARN, file_name="onossec.log")
 
-
-@login_check
-@cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def disablentp(request):
-    return render(request, "sdntool/disablentp.html")
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -29,29 +24,34 @@ def configntp(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+        iplist = onosServerRecord.iplist.split(",")
     except:
         iplist = []
     if request.method == "GET":
         return render(request, "sdntool/configntp.html", {"ip": iplist})
     server = request.POST.get("server")
     ip = request.POST.get("ip")
-    sshuser = request.POST.get("user")
-    password = request.POST.get("password")
     try:
         record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
-        primaryip = str(record.primaryip)
-        if ip == primaryip:
-            pass
+        iplist = record.iplist.split(",")
+        onosconfig = {}
+        if ip in iplist:
+            config = json.loads(record.multipleconfigjson)
+            for i in config:
+                if i["ip"] == ip:
+                    onosconfig = i
+                    break
         else:
             raise Exception
     except:
-        logger.warn("No IP is given as input")
+        logger.warning("No IP is given as input")
         messages.error(request, "No IP is given as input")
         return redirect("home")
 
     host = str(ip)
-    port = 22
+    port = onosconfig["ssh_port"]
+    sshuser = onosconfig["onos_user"]
+    password = onosconfig["onos_pwd"]
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     try:
@@ -77,7 +77,7 @@ def configntp(request):
         ssh_transp.close()
     except Exception as e:
         print(e)
-        logger.warn(f"Unable to connect remotely, {e.__str__()}")
+        logger.warning(f"Unable to connect remotely, {e.__str__()}")
         messages.error(request, "Unable to connect remotely")
         return redirect("home")
     print(outdata, errdata)

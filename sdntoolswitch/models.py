@@ -16,7 +16,7 @@ class Usermanagement(models.Model):
 
 class OnosServerManagement(models.Model):
     idonosservermanagement = models.BigAutoField(primary_key=True)
-    primaryip = models.CharField(max_length=200)
+    iplist = models.TextField()
     usercreated = models.CharField(max_length=200)
     multipleconfigjson = models.TextField()
 
@@ -31,3 +31,11 @@ class NtpConfigRecords(models.Model):
 
     class Meta:
         db_table = "ntpconfigrecords"
+
+class DeviceConfigRecords(models.Model):
+    ip = models.CharField(max_length=200)
+    usercreated = models.CharField(max_length=200)
+    portConf = models.TextField()
+
+    class Meta:
+        db_table = "deviceconfigrecords"

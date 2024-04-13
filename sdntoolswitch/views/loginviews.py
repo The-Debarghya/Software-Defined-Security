@@ -92,7 +92,7 @@ def home(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+        iplist = onosServerRecord.iplist.split(",")
     except:
         iplist = []
 

@@ -22,27 +22,19 @@ def addfire(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [
-            config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)
-        ]
+        iplist = onosServerRecord.iplist.split(",")
     except:
         iplist = []
-
     if request.method == "GET":
         return render(request, "sdntool/addrulesip.html", {"ip": iplist})
-
     try:
         ip = request.POST.get("ip")
-        record = OnosServerManagement.objects.get(
-            usercreated=request.session["login"]["username"]
-        )
-        host = str(record.primaryip)
-        if ip == host:
+        if ip != "":
             pass
         else:
             raise Exception
     except:
-        logger.warn("No IP given as input")
+        logger.warning("No IP given as input")
         messages.error(request, "No IP given as input")
         return redirect("addfire")
     try:
@@ -116,9 +108,7 @@ def addrulesbyport(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [
-            config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)
-        ]
+        iplist = onosServerRecord.iplist.split(",")
     except:
         iplist = []
 
@@ -127,16 +117,12 @@ def addrulesbyport(request):
 
     try:
         ip = request.POST.get("ip")
-        record = OnosServerManagement.objects.get(
-            usercreated=request.session["login"]["username"]
-        )
-        host = str(record.primaryip)
-        if ip == host:
+        if ip != "":
             pass
         else:
             raise Exception
     except:
-        logger.warn("No IP given as input")
+        logger.warning("No IP given as input")
         messages.error(request, "No IP given as input")
         return redirect("addrulesbyport")
     try:
@@ -222,33 +208,30 @@ def viewrules(request):
     record = OnosServerManagement.objects.get(
         usercreated=request.session["login"]["username"]
     )
-    firewallip = str(record.primaryip)
-    username = request.session["login"]["username"]
-    record = OnosServerManagement.objects.get(usercreated=username)
+    firewallresponse = []
     configarr = json.loads(record.multipleconfigjson)
-    config = [i for i in configarr if i["ip"] == firewallip][0]
-    onos_username = config["onos_user"]
-    onos_password = config["onos_pwd"]
-    port_num = config["port_num"]
-    try:
-        response = requests.get(
-            "http://"
-            + firewallip
-            + ":"
-            + str(port_num)
-            + "/onos/firewall-app/firewall/rules",
-            auth=HTTPBasicAuth(onos_username, onos_password),
-        )
-        firewallresponse = response.json()
-
-    except:
-        logger.warn("No Rules Added")
-        messages.error(request, "No Rules Added")
-        return render(request, "sdntool/viewrules.html")
-
+    for config in configarr:
+        firewallip = config["ip"]
+        onos_username = config["onos_user"]
+        onos_password = config["onos_pwd"]
+        port_num = config["port_num"]
+        try:
+            response = requests.get(
+                "http://"
+                + firewallip
+                + ":"
+                + str(port_num)
+                + "/onos/firewall-app/firewall/rules",
+                auth=HTTPBasicAuth(onos_username, onos_password),
+            )
+            firewallresponse.append({"ip": firewallip, "rules": response.json()})
+        except:
+            logger.warning("No Rules Added")
+            messages.error(request, "No Rules Added")
+            firewallresponse.append({"ip": firewallip, "rules": []})
+    username = request.session["login"]["username"]
     msg = f"{username} viewed firewall rules"
     logger_call(logging.INFO, msg, file_name="sds.log")
-
     return render(
         request, "sdntool/viewrules.html", {"firewallresponse": firewallresponse}
     )
@@ -256,14 +239,18 @@ def viewrules(request):
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def deleterules(request, id):
+def deleterules(request):
     """
     Deleting firewall rule by id
     """
     record = OnosServerManagement.objects.get(
         usercreated=request.session["login"]["username"]
     )
-    firewallip = str(record.primaryip)
+    firewallip = request.GET.get("firewallip", "")
+    id = request.GET.get("id", "")
+    if id == "" or firewallip == "":
+        messages.error(request, "No id/IP given as input")
+        return redirect("viewrules")
     username = request.session["login"]["username"]
     record = OnosServerManagement.objects.get(usercreated=username)
     configarr = json.loads(record.multipleconfigjson)
@@ -298,9 +285,7 @@ def addrulesbysrc(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [
-            config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)
-        ]
+        iplist = onosServerRecord.iplist.split(",")
     except:
         iplist = []
 
@@ -308,11 +293,7 @@ def addrulesbysrc(request):
         return render(request, "sdntool/addrulessrcip.html", {"ip": iplist})
     try:
         ip = request.POST.get("ip")
-        record = OnosServerManagement.objects.get(
-            usercreated=request.session["login"]["username"]
-        )
-        host = str(record.primaryip)
-        if ip == host:
+        if ip != "":
             pass
         else:
             raise Exception
@@ -332,7 +313,7 @@ def addrulesbysrc(request):
             ).json()
         )
     except:
-        logger.warn("Wrong Ip selected or ONOS not running at the Ip")
+        logger.warning("Wrong Ip selected or ONOS not running at the Ip")
         messages.error(request, "Wrong Ip selected or ONOS not running at the Ip")
         return redirect("addrulesbysrc")
 

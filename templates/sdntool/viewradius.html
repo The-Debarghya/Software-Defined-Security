@@ -42,13 +42,15 @@
           <th>Status</th>
         </tr>
       </thead>
-      {% if radius != "" %}
+      {% if radiuslist != [] %}
       <tbody id="mydiv">
+        {% for i in range(len(radiuslist)) %}
         <tr bg="lightcyan">
-          <td>1</td>
-          <td>{{radius}}</td>
+          <td>i+1</td>
+          <td>{{radiuslist[i]}}</td>
           <td>Configured</td>
         </tr>
+        {% endfor %}
       </tbody>
       {% endif %}
     </table>
