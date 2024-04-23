@@ -16,7 +16,7 @@ class Usermanagement(models.Model):
 
 class OnosServerManagement(models.Model):
     idonosservermanagement = models.BigAutoField(primary_key=True)
-    iplist = models.TextField()
+    iplist = models.TextField(default="")
     usercreated = models.CharField(max_length=200)
     multipleconfigjson = models.TextField()
 
