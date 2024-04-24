@@ -61,13 +61,13 @@
                 <div class="sb-sidenav-menu">
                     <div class="nav">
                         <a class="nav-link" style="background-color:green;color:white" href="{% url 'home' %}">
-                            <div class="sb-nav-link-icon"><i class="fas fa-laptop-house" style="color:white"></i></div>
+                            <div class="sb-nav-link-icon"><i class="fas fa-home" style="color:white"></i></div>
                             Home
                         </a>
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                             data-bs-target="#pagesCollapseAuth" style="background-color:lightgreen;"
                             aria-expanded="false" aria-controls="pagesCollapseAuth" id="sidenavAccordionPages">
-                            <i class="fas fa-key" style="margin-right: 13px"></i>
+                            <i class="fas fa-shield-alt" style="margin-right: 13px"></i>
                             Security Functions
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down" style="color:black"></i>
                             </div>
@@ -79,7 +79,7 @@
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                     data-bs-target="#pagesCollapseAuthAAA" style="background-color:antiquewhite" ;
                                     aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                    <i class="fas fa-key" style="margin-right: 13px"></i>
+                                    <i class="fas fa-fingerprint" style="margin-right: 13px"></i>
                                     AAA Management
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"
                                             style="color:black"></i></div>
@@ -89,12 +89,12 @@
                                     <nav class="sb-sidenav-menu-nested nav">
                                         {% if request.session.login.userrole != 'operator' %}
                                         <a href="{% url 'AAA' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-cogs"
                                                     style="margin-right: 13px"></i>Configure AAA</span>
                                         </a>
                                         {% endif %}
                                         <a href="{% url 'viewradius' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-eye"
                                                     style="margin-right: 13px"></i>View Configuration</span>
                                         </a>
 
@@ -104,7 +104,7 @@
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                     data-bs-target="#pagesCollapseAuthFire" style="background-color:antiquewhite" ;
                                     aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                    <i class="fas fa-key" style="margin-right: 13px"></i>
+                                    <i class="fas fa-fire-alt" style="margin-right: 13px"></i>
                                     Firewall Management
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"
                                             style="color:black"></i></div>
@@ -128,17 +128,15 @@
 
                                         {% endif %}
                                         <a href="{% url 'viewrules' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-eye"
                                                     style="margin-right: 13px"></i>View Rules</span>
                                         </a>
-
-
                                     </nav>
                                 </div>
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                     data-bs-target="#pagesCollapseAuthTLS" style="background-color:antiquewhite" ;
                                     aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                    <i class="fas fa-key" style="margin-right: 13px"></i>
+                                    <i class="fas fa-lock" style="margin-right: 13px"></i>
                                     TLS Authentication
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"
                                             style="color:black"></i></div>
@@ -149,16 +147,16 @@
                                         {% if request.session.login.userrole != 'operator' %}
 
                                         <a href="{% url 'modifytls' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-cogs"
                                                     style="margin-right: 13px"></i>Modify TLS</span>
                                         </a>
                                         <a href="{% url 'disabletls' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-lock-open"
                                                     style="margin-right: 13px"></i>Disable TLS</span>
                                         </a>
                                         {% endif %}
                                         <a href="{% url 'viewtls' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-eye"
                                                     style="margin-right: 13px"></i>View Configuration</span>
                                         </a>
                                     </nav>
@@ -167,7 +165,7 @@
                                 <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                                     data-bs-target="#pagesCollapseAuthHTTPS" style="background-color:antiquewhite" ;
                                     aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                    <i class="fas fa-key" style="margin-right: 13px"></i>
+                                    <i class="fas fa-user-lock" style="margin-right: 13px"></i>
                                     HTTPS Configuration
                                     <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"
                                             style="color:black"></i></div>
@@ -178,16 +176,16 @@
                                         {% if request.session.login.userrole != 'operator' %}
 
                                         <a href="{% url 'modifyhttp' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-cogs"
                                                     style="margin-right: 13px"></i>Modify HTTPS</span>
                                         </a>
                                         <a href="{% url 'disablehttp' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-ban"
                                                     style="margin-right: 13px"></i>Disable HTTPS</span>
                                         </a>
                                         {% endif %}
                                         <a href="{% url 'viewhttp' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-eye"
                                                     style="margin-right: 13px"></i>View Configuration</span>
                                         </a>
                                     </nav>
@@ -206,16 +204,16 @@
                                     <nav class="sb-sidenav-menu-nested nav">
                                         {% if request.session.login.userrole != 'operator' %}
                                         <a href="{% url 'addconfigpasswordcontroller' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-cogs"
                                                     style="margin-right: 13px"></i>Configure/Enable</span>
                                         </a>
                                         <a href="{% url 'modifypassword' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-cogs"
                                                     style="margin-right: 13px"></i>Modify configuration</span>
                                         </a>
                                         {% endif %}
                                         <a href="{% url 'viewconfigurationpassword' %}" class="nav-link">
-                                            <span class="menu-collapsed"><i class="fas fa-server"
+                                            <span class="menu-collapsed"><i class="fas fa-eye"
                                                     style="margin-right: 13px"></i>View configuration</span>
                                         </a>
                                     </nav>
@@ -231,7 +229,7 @@
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                             data-bs-target="#pagesCollapseAuthNTP" style="background-color:antiquewhite" ;
                             aria-expanded="false" aria-controls="pagesCollapseAuth">
-                            <i class="fas fa-key" style="margin-right: 13px"></i>
+                            <i class="fas fa-clock" style="margin-right: 13px"></i>
                             NTP Configuration
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down" style="color:black"></i>
                             </div>
@@ -246,7 +244,7 @@
                                 </a>
                                 {% endif %}
                                 <a href="{% url 'ntp' %}" class="nav-link">
-                                    <span class="menu-collapsed"><i class="fas fa-server"
+                                    <span class="menu-collapsed"><i class="fas fa-history"
                                             style="margin-right: 13px"></i>View configuration</span>
                                 </a>
                             </nav>

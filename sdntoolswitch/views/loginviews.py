@@ -92,9 +92,9 @@ def home(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = onosServerRecord.iplist.split(",")
+        iplist = json.loads(onosServerRecord.multipleconfigjson)
     except:
         iplist = []
 
     username = request.session["login"]["username"]
-    return render(request, "sdntool/home.html", {"ip": iplist, "title": data["title"]})
+    return render(request, "sdntool/home.html", {"iplist": iplist, "title": data["title"]})

@@ -24,7 +24,7 @@
     <div class="container-fluid mt-2 mx-4">
       <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
         {{ message }}
-        {% if message.tags == 'alert-error' %}
+        {% if portfaultcounter != 0 %}
 
         <script>alert("{{message}}")</script>
         {% endif %}     
@@ -37,6 +37,7 @@
       <table class="table table-bordered">
         <thead class="table-dark">
           <tr>
+            <th>ONOS IP</th>
             <th>Device id</th>
             <th>Port no</th>
           </tr>
@@ -44,6 +45,7 @@
         <tbody>
           {% for x in portfaultresponse %}
           <tr bg="orange">
+            <td>{{x.ip}}</td>
             <td> {{x.id}} </td>
             <td>{{x.port}}</td>
           </tr>

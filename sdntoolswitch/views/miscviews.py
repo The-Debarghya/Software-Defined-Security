@@ -126,9 +126,12 @@ def ddos(request):
     )
     configarr = json.loads(record.multipleconfigjson)
     for config in configarr:
-        deviceRecord = DeviceConfigRecords.objects.get(
-            usercreated=request.session["login"]["username"], ip=config["ip"]
-        )
+        try:
+            deviceRecord = DeviceConfigRecords.objects.get(
+                usercreated=request.session["login"]["username"], ip=config["ip"]
+            )
+        except Exception:
+            deviceRecord = None
         onos_username = config["onos_user"]
         onos_password = config["onos_pwd"]
         if deviceRecord is None:
@@ -147,7 +150,8 @@ def ddos(request):
                 portConf=json.dumps(portapi),
             )
             deviceConfig.save()
-        portconfiguration = json.loads(deviceRecord.portConf)
+        record = DeviceConfigRecords.objects.get(usercreated=request.session["login"]["username"], ip=config["ip"])
+        portconfiguration = json.loads(record.portConf)
         allportapi = dict(
             requests.get(
                 f"http://{config['ip']}:8181/onos/v1/devices/ports",

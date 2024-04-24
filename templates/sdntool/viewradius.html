@@ -17,17 +17,18 @@
 </div>
 
 <div class="row mt-4" id="switchfault">
-  <h4 class="card-header" style="background-color:aquamarine"> <i class="fas fa-home" style="margin-right:14px"></i>AAA
+  <h4 class="card-header" style="background-color:aquamarine"> <i class="fas fa-fingerprint" style="margin-right:14px"></i>AAA
     Management</h4>
-  <h4 class="card-header" style="background-color:lightyellow; text-align: center;"> <i class="fas fa-laptop-code"
+  <h4 class="card-header" style="background-color:lightyellow; text-align: center;"> <i class="fas fa-eye"
       style="margin-right:14px"></i>View Configuration</h4>
   <div class="col-sm-12" style="float:none;margin:auto;">
     <div class="text-center mt-4 mx-3 mb-3">
       {% for message in messages %}
       <div class="container-fluid mt-2 mx-4">
-        <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+        <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
 
           {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       </div>
       {% endfor %}
@@ -42,12 +43,12 @@
           <th>Status</th>
         </tr>
       </thead>
-      {% if radiuslist != [] %}
+      {% if radiuslist|length != 0 %}
       <tbody id="mydiv">
-        {% for i in range(len(radiuslist)) %}
+        {% for i in radiuslist %}
         <tr bg="lightcyan">
-          <td>i+1</td>
-          <td>{{radiuslist[i]}}</td>
+          <td>loop.index</td>
+          <td>{{i}}</td>
           <td>Configured</td>
         </tr>
         {% endfor %}

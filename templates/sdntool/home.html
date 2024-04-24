@@ -1,57 +1,76 @@
 {% extends "sdntool/base.html" %} {% block content %}
 
- 
+
 <h4></br>
   Software Defined Security
   <small class="text-muted">Version 1.0</small>
 </h4>
-<style>
 
-
-</style>
 <div class="row mt-4" id="switchfault">
   <h4 class="card-header" style="background-color:aquamarine"> <i class="fas fa-home" style="margin-right:14px"></i>Home
   </h4>
-  <h4 class="card-header" style="background-color:antiquewhite"> <i class="fas fa-laptop-code"
+  <h4 class="card-header" style="background-color:antiquewhite; text-align: center;"> <i class="fas fa-shield-alt"
       style="margin-right:14px"></i> Security Status Monitoring</h4>
   <div class="col-sm-12" style="float:none;margin:auto;">
     <div class="text-center mt-4 mx-3 mb-3">
 
       {% if request.session.login.userrole != 'operator' %}
       <a href="{% url 'extraconfig' %}" class="btn btn btn-lg active" role="button" aria-pressed="true"
-        style="height:50px;width:200px;background-color:lightgreen">Add Config<i class="fas fa-wrench" style="margin-left:10px"></i></a>
+        style="height:50px;width:200px;background-color:lightgreen">Add Config<i class="fas fa-cogs"
+          style="margin-left:10px"></i></a>
     </div>
     {% endif %}
 
     <div class="text-center mt-4 mx-4 mb-3" style="background-color:lightgoldenyellow;">
       <h5 style="background-color:turquoise;border: 1px black solid;">Configured Ip addresess:</h5>
-
-      {% for x in ip %}
-      <p style="background-color: lightyellow;">{{x}}</p>
-      {% endfor %}
     </div>
     <div id="formFooter">
       {% for message in messages %}
       <div class="container-fluid mt-2">
         <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
-
           {{ message }}
         </div>
       </div>
       {% endfor %}
     </div>
 
-
+    <div class="card-body table-responsive">
+    <table class="table table-bordered filter_datatable">
+  
+      <thead class="table" style="background-color:turquoise;">
+        <tr>
+          <th>Sl No.</th>
+          <th>Server IP</th>
+          <th>ONOS User</th>
+          <th>ONOS Password</th>
+          <th>ONOS Location</th>
+          <th>Karaf Version</th>
+          <th>SSH User</th>
+          <th>SSH Password</th>
+        </tr>
+  
+      </thead>
+      <tbody id="mydiv">
+  
+        {% for x in iplist %}
+        <tr bg="lightcyan">
+          <td>{{forloop.counter}}</td>
+          <td>{{x.ip}}</td>
+          <td>{{x.onos_user}}</td>
+          <td>{{x.onos_pwd}}</td>
+          <td>{{x.file_loc}}</td>
+          <td>{{x.karaf_ver}}</td>
+          <td>{{x.ssh_user}}</td>
+          <td>{{x.ssh_pass}}</td>
+        </tr>
+        {% endfor %}
+  
+      </tbody>
+    </table>
+  </div>
 
 
     {% endblock %}
     {% block javascript %}
-    <script>
-
-
-
-
-
-    </script>
 
     {% endblock %}

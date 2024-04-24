@@ -433,8 +433,8 @@ def viewpasswordconfiguration(request):
         for j in range(i, len(ipconfiglist)):
             if ipconfiglist[i]["ip"] == ipconfiglist[j]["ip"]:
                 ipstatus = ipconfiglist[j]
-
-        newipconfiglist.append(ipstatus)
+        if ipstatus not in newipconfiglist:
+            newipconfiglist.append(ipstatus)
     username = request.session["login"]["username"]
     msg = f"{username} viewed ONOS password Configuration"
     logger.info(msg)
