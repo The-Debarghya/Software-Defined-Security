@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 import paramiko
 import logging
 
@@ -177,7 +178,8 @@ def disabletlsconfirm(request):
             file.writelines(data)
         sftp.close()
         ssh.close()
-    except:
+    except Exception:
+        print(traceback.format_exc())
         logger.warning("Unable to connect with given IP")
         messages.error(request, "Unable to connect with given IP")
         return redirect("disabletlsconfirm")
