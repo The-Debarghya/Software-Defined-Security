@@ -5,6 +5,8 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
+
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -57,6 +59,7 @@ def log(request):
 
     return render(request, "sdntool/log.html", {"logresponse": loglist})
 
+
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def onosseclog(request):
@@ -108,6 +111,7 @@ def onosseclog(request):
 
     return render(request, "sdntool/onosseclog.html", {"logresponse": loglist})
 
+
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def onossecdateform(request):
@@ -115,6 +119,7 @@ def onossecdateform(request):
     View for ONOS security logs date form
     """
     return render(request, "sdntool/onossecdate.html")
+
 
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -124,6 +129,7 @@ def dateform(request):
     """
     return render(request, "sdntool/date.html")
 
+
 @login_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deleteonosseclogconfirm(request):
@@ -132,7 +138,9 @@ def deleteonosseclogconfirm(request):
     """
     return render(request, "sdntool/deleteonosseclogs.html")
 
+
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deleteonosseclogs(request):
     """
@@ -142,7 +150,9 @@ def deleteonosseclogs(request):
         logfile.truncate()
     return redirect("onosseclog")
 
+
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deletelogs(request):
 
@@ -150,7 +160,9 @@ def deletelogs(request):
         logfile.truncate()
     return redirect("logmanagement")
 
+
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deletelogconfirm(request):
     return render(request, "sdntool/deletelogs.html")

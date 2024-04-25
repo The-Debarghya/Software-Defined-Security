@@ -14,6 +14,7 @@ from sdntoolswitch.models import (
     NtpConfigRecords,
 )
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
 from sdntoolswitch.generic_logger import logger_call, create_logger
 
 logger = create_logger(
@@ -22,6 +23,7 @@ logger = create_logger(
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def configntp(request):
     """

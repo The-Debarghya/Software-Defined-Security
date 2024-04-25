@@ -9,6 +9,7 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.utils import *
 from sdntoolswitch.generic_logger import logger_call, create_logger
@@ -16,6 +17,7 @@ from sdntoolswitch.generic_logger import logger_call, create_logger
 logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addconfig(request):
     if request.method == "GET":
@@ -111,6 +113,7 @@ def addextraconfig(request):
     return render(request, "sdntool/extraconfig.html")
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addconfigpassword(request):
     """
@@ -200,6 +203,7 @@ def addconfigpassword(request):
     return redirect("viewconfigurationpassword")
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def modifypassword(request):
     """
@@ -286,6 +290,7 @@ def modifypassword(request):
     return redirect("viewconfigurationpassword")
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablepassword(request):
     username = request.session["login"]["username"]
@@ -297,6 +302,7 @@ def disablepassword(request):
     return render(request, "sdntool/disablepassword.html", {"ip": iplist})
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disablepasswordconfirm(request):
     """

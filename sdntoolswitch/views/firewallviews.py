@@ -8,12 +8,14 @@ from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
 from sdntoolswitch.generic_logger import logger_call, create_logger
 
 logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addfire(request):
     """
@@ -64,6 +66,7 @@ def addfire(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addfirecontroller(request):
     """
@@ -100,6 +103,7 @@ def addfirecontroller(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbyport(request):
     """
@@ -154,6 +158,7 @@ def addrulesbyport(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbyportcontroller(request):
     """
@@ -238,6 +243,7 @@ def viewrules(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deleterules(request):
     """
@@ -268,6 +274,7 @@ def deleterules(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addscrulesip(request):
     """
@@ -277,6 +284,7 @@ def addscrulesip(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbysrc(request):
     """
@@ -323,6 +331,7 @@ def addrulesbysrc(request):
 
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def addrulesbysrccontroller(request):
     """

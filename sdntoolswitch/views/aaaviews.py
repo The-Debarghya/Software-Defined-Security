@@ -8,9 +8,11 @@ from django.views.decorators.cache import cache_control
 from requests.auth import HTTPBasicAuth
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
 from sdntoolswitch.generic_logger import logger_call
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def aaa(request):
     """
@@ -30,6 +32,7 @@ def aaa(request):
     return render(request, "sdntool/configureradius.html", {"ip": ip})
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def aaacontroller(request):
     """

@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.views.decorators.cache import cache_control
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
 from sdntoolswitch.generic_logger import logger_call, create_logger
 
 logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
@@ -16,6 +17,7 @@ logger = create_logger(__package__.rsplit(".", 1)[-1], file_name="onossec.log")
 ipconfiglist = []
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def modifytls(request):
     """
@@ -116,11 +118,13 @@ def modifytls(request):
     return redirect("viewtls")
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disabletls(request):
     return render(request, "sdntool/disabletls.html")
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def disabletlsconfirm(request):
     """
