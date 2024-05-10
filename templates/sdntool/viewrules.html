@@ -19,17 +19,18 @@
 </div>
 
 <div class="row mt-4" id="switchfault">
-  <h4 class="card-header" style="background-color:aquamarine"> <i class="fas fa-home"
+  <h4 class="card-header" style="background-color:aquamarine"> <i class="fas fa-fire-alt"
       style="margin-right:14px"></i>Firewall Management</h4>
-  <h4 class="card-header" style="background-color:antiquewhite; text-align: center;"> <i class="fas fa-laptop-code"
+  <h4 class="card-header" style="background-color:antiquewhite; text-align: center;"> <i class="fas fa-eye"
       style="margin-right:14px"></i>View Rules</h4>
   <div class="col-sm-12" style="float:none;margin:auto;">
     <div class="text-center mt-4 mx-3 mb-3">
       {% for message in messages %}
       <div class="container-fluid mt-2 mx-4">
-        <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+        <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
 
           {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
       </div>
       {% endfor %}
@@ -57,7 +58,7 @@
 
       <thead class="table" style="background-color:turquoise;">
         <tr>
-          <th>Serial no.</th>
+          <th>Firewall IP</th>
           <th>Rule ID</th>
           <th>Source MAC</th>
           <th>Destination MAC</th>
@@ -74,17 +75,21 @@
       <tbody id="mydiv">
         {% for x in firewallresponse %}
         <tr bg="lightcyan">
-          <td>{{forloop.counter}}</td>
-          <td>{{x.ruleId}}</td>
-          <td>{{x.srcMac}}</td>
-          <td> {{x.dstMac}}</td>
-          <td>{{x.protocol}}</td>
-          <td>{{x.deviceId}}</td>
-          <td>{{x.port}}</td>
-          <td>{{x.action}}</td>
+          {% if x.rules|length != 0 %}
+          <td rowspan="{{ x.rules|length }}">{{x.ip}}</td>
+          {% for rule in x.rules %}
+          <td>{{rule.ruleId}}</td>
+          <td>{{rule.srcMac}}</td>
+          <td>{{rule.dstMac}}</td>
+          <td>{{rule.protocol}}</td>
+          <td>{{rule.deviceId}}</td>
+          <td>{{rule.port}}</td>
+          <td>{{rule.action}}</td>
           {% if request.session.login.userrole != 'operator' %}
-          <td><a href="{% url 'deleterules' id=x.ruleId %}" class="btn btn-primary btn-lg active" role="button"
+          <td><a href="{% url 'deleterules' %}?id={{rule.ruleId}}&firewallip={{x.ip}}" class="btn btn-primary btn-lg active" role="button"
               style="background-color:red" aria-pressed="true">Delete</a></td>
+          {% endif %}
+          {% endfor %}
           {% endif %}
         </tr>
         {% endfor %}

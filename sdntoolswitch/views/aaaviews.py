@@ -8,9 +8,11 @@ from django.views.decorators.cache import cache_control
 from requests.auth import HTTPBasicAuth
 from sdntoolswitch.models import OnosServerManagement
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_manager_check
 from sdntoolswitch.generic_logger import logger_call
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def aaa(request):
     """
@@ -19,7 +21,7 @@ def aaa(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+        iplist = onosServerRecord.iplist.split(",")
     except:
         iplist = []
 
@@ -30,6 +32,7 @@ def aaa(request):
     return render(request, "sdntool/configureradius.html", {"ip": ip})
 
 @login_check
+@admin_manager_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def aaacontroller(request):
     """
@@ -86,24 +89,25 @@ def viewradius(request):
     View for viewing radius server
     """
     record = OnosServerManagement.objects.get(usercreated=request.session["login"]["username"])
-    host = str(record.primaryip)
-    username = request.session["login"]["username"]
-    record = OnosServerManagement.objects.get(usercreated=username)
-    configarr = json.loads(record.multipleconfigjson)
-    config = [i for i in configarr if i["ip"] == host][0]
-    onos_username = config["onos_user"]
-    onos_password = config["onos_pwd"]
-    try:
-        response = requests.get(
-            f"http://{host}:8181/onos/v1/network/configuration",
-            auth=HTTPBasicAuth(onos_username, onos_password),
-        )
-        config = response.json()  ####### reading the json file
-        radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
-    except Exception as e:
-        radiusip = ""
-        logger_call(logging.ERROR, f"Error in viewing radius: {e.__str__()}", file_name="aaa.log")
+    configlist = json.loads(record.multipleconfigjson)
+    radiuslist = []
+    for config in configlist:
+        host = config["ip"]
+        onos_username = config["onos_user"]
+        onos_password = config["onos_pwd"]    
+        try:
+            response = requests.get(
+                f"http://{host}:8181/onos/v1/network/configuration",
+                auth=HTTPBasicAuth(onos_username, onos_password),
+            )
+            config = response.json()  ####### reading the json file
+            radiusip = config["apps"]["org.opencord.aaa"]["AAA"]["radiusIp"]
+            radiuslist.append(radiusip)
+        except Exception as e:
+            radiusip = ""
+            logger_call(logging.ERROR, f"Error in viewing radius: {e.__str__()}", file_name="aaa.log")
 
+    username = request.session["login"]["username"]
     msg = f"{username} viewed AAA"
     logger_call(logging.INFO, msg, file_name="sds.log")
-    return render(request, "sdntool/viewradius.html", {"radius": radiusip})
+    return render(request, "sdntool/viewradius.html", {"radiuslist": radiuslist})

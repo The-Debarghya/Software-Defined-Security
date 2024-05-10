@@ -19,9 +19,9 @@
 <div class="row mt-4">
   <div class=col-sm-8 style="float:none;margin:auto;">
     <div class="card bg-light">
-      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
+      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-fire-alt"
           style="margin-right:14px"></i>Firewall Management</h3>
-      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"><i class="fas fa-plus"
+      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"><i class="fas fa-server"
           style="margin-right:14px"></i>Add Rules </h4>
       <div class="card-body">
         <form action="{% url 'addfire' %}" method="post">
@@ -41,9 +41,10 @@
   <div id="formFooter">
     {% for message in messages %}
     <div class="container-fluid mt-2">
-      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+      <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
 
         {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     </div>
     {% endfor %}

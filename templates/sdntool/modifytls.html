@@ -20,9 +20,9 @@
 <div class="row mt-4">
   <div class=col-sm-8 style="float:none;margin:auto;">
     <div class="card bg-light">
-      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
+      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-lock"
           style="margin-right:14px"></i>TLS Authentication</h3>
-      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"><i class="fas fa-plus"
+      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"><i class="fas fa-cogs"
           style="margin-right:14px"></i>Modify TLS Configuration</h4>
       <div class="card-body">
         <form action="{% url 'modifytls' %}" method="post">
@@ -47,12 +47,6 @@
             required>
           <label for="trustpassword">Trust Store Password</label>
           <input type="password" id="trustpassword" class="fadeIn second" value="222222" name="trustpassword" required>
-          <label for="sshuser">SSH User</label>
-          <input type="text" id="sshuser" class="fadeIn second" name="sshuser" required>
-          <label for="sshpass">SSH Password</label>
-          <input type="password" id="sshpass" class="fadeIn second" name="sshpass" required>
-          <label for="filepath">ONOS Location</label>
-          <input type="text" id="filepath" class="fadeIn second" name="fileloc" value="/home/ubuntu/onos" required>
           <input type="submit" class="fadeIn fourth" value="Submit">
       </div>
 
@@ -62,9 +56,10 @@
   <div id="formFooter">
     {% for message in messages %}
     <div class="container-fluid mt-2">
-      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+      <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
 
         {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     </div>
     {% endfor %}

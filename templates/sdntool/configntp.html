@@ -21,9 +21,9 @@
 <div class="row mt-4">
   <div class=col-sm-8 style="float:none;margin:auto;">
     <div class="card bg-light">
-      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
+      <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-clock"
           style="margin-right:14px"></i>Network Time Protocol</h3>
-      <h4 class="card-header " style="background-color:lightyellow; text-align: center;" ;><i class="fas fa-plus"
+      <h4 class="card-header " style="background-color:lightyellow; text-align: center;" ;><i class="fas fa-server"
           style="margin-right:14px"></i>Modify NTP</h4>
       <div class="card-body">
         <form action="{% url 'configntp' %}" method="post">
@@ -36,10 +36,6 @@
           </select>
           <label for="server">NTP Server(Any active, reachable NTP server)</label>
           <input type="text" id="server" class="fadeIn second" value="time.google.com" name="server" required>
-          <label for="user">SSH Username</label>
-          <input type="text" id="user" class="fadeIn second" value="srijita" name="user" required>
-          <label for="password">SSH Password</label>
-          <input type="password" id="password" class="fadeIn second" name="password" required>
 
           <input type="submit" class="fadeIn fourth" value="Submit">
       </div>

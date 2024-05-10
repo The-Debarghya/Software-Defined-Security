@@ -14,7 +14,6 @@ urlpatterns = [
     # DDOS and NTP functions
     path("ddos/", views.ddos, name="DDOS"),
     path("ntp/", views.ntp, name="ntp"),
-    path("disablentp/", views.disablentp, name="disablentp"),
     path("configntp/", views.configntp, name="configntp"),
     # User functions
     path("CREATEUSER/", views.Createuser, name="CREATE_USER"),
@@ -49,7 +48,7 @@ urlpatterns = [
     path("addfire/", views.addfire, name="addfire"),
     path("addfirecontroller/", views.addfirecontroller, name="addfirecontroller"),
     path("viewrules/", views.viewrules, name="viewrules"),
-    path("deleterules/<str:id>", views.deleterules, name="deleterules"),
+    path("deleterules/", views.deleterules, name="deleterules"),
     path("addrulesbyport/", views.addrulesbyport, name="addrulesbyport"),
     path(
         "addrulesbyportcontroller/",

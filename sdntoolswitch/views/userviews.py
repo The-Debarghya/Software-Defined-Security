@@ -3,6 +3,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import cache_control
 from sdntoolswitch.login_validator import login_check
+from sdntoolswitch.role_validator import admin_check
 from sdntoolswitch.models import Usermanagement, OnosServerManagement, NtpConfigRecords
 from sdntoolswitch.generic_logger import logger_call
 
@@ -15,6 +16,7 @@ def createuserform(request):
 
 
 @login_check
+@admin_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def Createuser(request):
     """
@@ -35,6 +37,7 @@ def Createuser(request):
     return redirect("showusers")
 
 @login_check
+@admin_check
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def deleteuser(request, id):
     """

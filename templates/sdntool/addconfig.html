@@ -36,7 +36,7 @@
     <div class="card bg-light">
       <h3 class="card-header " style="background-color:turquoise" ;> <i class="fas fa-cog"
           style="margin-right:14px"></i>ONOS Configuration Settings</h3>
-      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"> <i class="fas fa-plus"
+      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"> <i class="fas fa-cogs"
           style="margin-right:14px"></i>Add ONOS configuration</h4>
       <div class="card-body">
         <form action="{% url 'configcontroller' %} " method="post">
@@ -54,6 +54,16 @@
           <input type="password" id="onospwd" class="fadeIn second" name="onospwd" required>
           <label for="onospwdcnf">Confirm ONOS password</label>
           <input type="password" id="onospwdcnf" class="fadeIn second" name="onospwdcnf" required>
+          <label for="sshuser">SSH username</label>
+          <input type="text" id="sshuser" class="fadeIn second" name="sshuser" required>
+          <label for="sshpass">SSH password</label>
+          <input type="password" id="sshpass" class="fadeIn second" name="sshpass" required>
+          <label for="sshport">SSH port</label>
+          <input type="text" id="sshport" class="fadeIn second" name="sshport" value="8101" required>
+          <label for="fileloc">ONOS folder location</label>
+          <input type="text" id="fileloc" class="fadeIn second" name="fileloc" value="/home/ubuntu/onos" required>
+          <label for="karaf">Karaf version</label>
+          <input type="text" id="karaf" class="fadeIn second" name="karaf" value="4.2.9" required>
           <input type="submit" class="fadeIn fourth" value="Submit">
           <div class="text-center mt-4">
             <a href="{% url 'home' %}" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Return to
@@ -64,9 +74,10 @@
     </div>
     {% for message in messages %}
     <div class="container-fluid mt-2 mx-4">
-      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
+      <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
 
         {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> 
       </div>
     </div>
     {% endfor %}

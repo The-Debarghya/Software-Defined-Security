@@ -4,7 +4,7 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.views.decorators.cache import cache_control
-from sdntoolswitch.models import OnosServerManagement, Usermanagement, NtpConfigRecords
+from sdntoolswitch.models import OnosServerManagement, Usermanagement, NtpConfigRecords, DeviceConfigRecords
 from sdntoolswitch.formvalidation import Validator
 from sdntoolswitch.login_validator import login_check
 from sdntoolswitch.generic_logger import logger_call
@@ -72,8 +72,8 @@ def logout(request):
     global username
     username = request.session["login"]["username"]
     del request.session["login"]
-    OnosServerManagement.objects.filter(usercreated=username).delete()
     NtpConfigRecords.objects.filter(usercreated=username).delete()
+    DeviceConfigRecords.objects.filter(usercreated=username).delete()
     with open("portconf.json", "w") as file:
         file.truncate()
     logger_call(logging.INFO, f"{username} logged out", file_name="sds.log")
@@ -92,9 +92,9 @@ def home(request):
     username = request.session["login"]["username"]
     onosServerRecord = OnosServerManagement.objects.get(usercreated=username)
     try:
-        iplist = [config["ip"] for config in json.loads(onosServerRecord.multipleconfigjson)]
+        iplist = json.loads(onosServerRecord.multipleconfigjson)
     except:
         iplist = []
 
     username = request.session["login"]["username"]
-    return render(request, "sdntool/home.html", {"ip": iplist, "title": data["title"]})
+    return render(request, "sdntool/home.html", {"iplist": iplist, "title": data["title"]})

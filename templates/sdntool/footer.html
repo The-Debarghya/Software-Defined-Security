@@ -16,9 +16,6 @@
 </footer>
 </div>
 
-
-
-
 <script src="/static/js/all.min.js" crossorigin="anonymous"></script>
 <script src="/static/js/jquery.js?{% now 'U' %}"></script>
 <script src="/static/js/bootstrap.bundle.min.js?{% now 'U' %}" crossorigin="anonymous"></script>
@@ -33,65 +30,34 @@
 
 </html>
 
-
-
-
-
-
 <script>
     // initialising dt table
     $(document).ready(function () {
-
         $(".filter_datatable").DataTable({
             stateSave: true,
             // Definition of filter to display
             filterDropDown: {
-                columns: [
-                    {
-                        idx: 1
-                    },
-                    {% comment %} {
-            idx: 3
-        } {% endcomment %}
-                            ],
-        bootstrap: true
-                        }
-                    });
-    $(".filter_portdatatable").DataTable({
-        stateSave: true,
-        // Definition of filter to display
-        filterDropDown: {
-            columns: [
-                {
-                    idx: 0
-                },
-                {% comment %} {
-        idx: 3
-    } {% endcomment %}
-                            ],
-        bootstrap: true
-                        }
-                    });
-
-    $(".hostfilter_datatable").DataTable({
-        stateSave: true,
-        // Definition of filter to display
-        filterDropDown: {
-            columns: [
-                {
-                    idx: 8
-                },
-                {% comment %} {
-        idx: 3
-    } {% endcomment %}
-                        ],
-        bootstrap: true
-                    }
-                });
-            } );
-
-
-
+                columns: [{idx: 1},{% comment %} {idx: 3} {% endcomment %}],
+                bootstrap: true
+            }
+        });
+        $(".filter_portdatatable").DataTable({
+            stateSave: true,
+            // Definition of filter to display
+            filterDropDown: {
+                columns: [{idx: 0},{% comment %} {idx: 3} {% endcomment %}],
+                bootstrap: true
+            }
+        });
+        $(".hostfilter_datatable").DataTable({
+            stateSave: true,
+            // Definition of filter to display
+            filterDropDown: {
+                columns: [{idx: 8},{% comment %} {idx: 3} {% endcomment %}],
+                bootstrap: true
+            }
+        });
+    });
 </script>
 </body>
 

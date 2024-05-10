@@ -21,7 +21,7 @@
     <div class="card bg-light">
       <h3 class="card-header " style="background-color:aquamarine;"> <i class="fas fa-cog"
           style="margin-right:14px"></i>AAA Management</h3>
-      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"><i class="fas fa-plus"
+      <h4 class="card-header " style="background-color:antiquewhite; text-align: center;"><i class="fas fa-cogs"
           style="margin-right:14px"></i>Configure AAA</h4>
       <div class="card-body">
         <form action="{% url 'AAA' %}" method="post">
@@ -40,9 +40,9 @@
   <div id="formFooter">
     {% for message in messages %}
     <div class="container-fluid mt-2">
-      <div class="alert {{ message.tags }} alert-dismissible text-center" role="alert">
-
+      <div class="alert {{ message.tags }} alert-dismissible text-center fade show" role="alert">
         {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     </div>
     {% endfor %}
